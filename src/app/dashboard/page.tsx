@@ -189,7 +189,7 @@ export default function Dashboard() {
                       </div>
                       <p className="text-slate-500 font-medium">No bookings found</p>
                       <button
-                        onClick={() => router.push("/Book")}
+                        onClick={() => router.push("/book")}
                         className="mt-4 bg-[#0C1B33] text-white px-6 py-2 rounded-lg hover:bg-[#1e3a5f] transition-colors"
                       >
                         Book a Service
@@ -341,7 +341,7 @@ export default function Dashboard() {
               <h3 className="font-bold text-lg mb-4">Quick Actions</h3>
               <div className="space-y-3">
                 <button
-                  onClick={() => router.push("/Book")}
+                  onClick={() => router.push("/book")}
                   className="w-full text-left px-4 py-3 bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-xl transition-all font-medium border border-white/20"
                 >
                   📅 Book New Service
@@ -646,7 +646,7 @@ export default function Dashboard() {
                   onClick={async () => {
                     try {
                       const token = localStorage.getItem("token");
-                      await fetch(`http://localhost:5000/api/users/bookings/${selectedBooking._id}/rate`, {
+                      await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/users/bookings/${selectedBooking._id}/rate`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                         body: JSON.stringify({ rating, review: reviewText })

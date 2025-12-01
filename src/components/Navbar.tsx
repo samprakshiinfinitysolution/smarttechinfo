@@ -203,9 +203,9 @@ export default function Navbar({
             onClick={() => {
               const token = localStorage.getItem("token");
               if (!token) {
-                router.push("/user-login?redirect=/Book");
+                router.push("/user-login?redirect=/book");
               } else {
-                router.push("/Book");
+                router.push("/book");
               }
             }}
             className="bg-[#0C1B33] text-white px-5 py-2 rounded-lg inline-block hover:bg-[#16294d] transition-colors"
@@ -316,9 +316,9 @@ export default function Navbar({
                 onClick={() => {
                   const token = localStorage.getItem("token");
                   if (!token) {
-                    router.push("/user-login?redirect=/Book");
+                    router.push("/user-login?redirect=/book");
                   } else {
-                    router.push("/Book");
+                    router.push("/book");
                   }
                   setOpen(false);
                 }}

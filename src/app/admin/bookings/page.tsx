@@ -147,7 +147,7 @@ export default function BookingsPage() {
               const token = localStorage.getItem("adminToken");
               if (token) {
                 try {
-                  const res = await fetch('http://localhost:5000/api/admin/export/bookings', {
+                  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/admin/export/bookings`, {
                     headers: { Authorization: `Bearer ${token}` }
                   });
                   const blob = await res.blob();
@@ -695,6 +695,15 @@ export default function BookingsPage() {
                 </div>
                 <p className="text-base font-semibold text-slate-900">{showDetailsModal.service || 'N/A'}</p>
               </div>
+              {showDetailsModal.issue && (
+                <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <svg className="w-5 h-5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
+                    <p className="text-sm font-medium text-amber-900">Issue Description</p>
+                  </div>
+                  <p className="text-sm text-amber-900">{showDetailsModal.issue}</p>
+                </div>
+              )}
               {showDetailsModal.address && (
                 <div className="bg-slate-50 p-4 rounded-xl">
                   <div className="flex items-center gap-2 mb-2">

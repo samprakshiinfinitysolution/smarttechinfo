@@ -7,9 +7,9 @@ export default function HeroSection() {
   const handleBookNow = () => {
     const token = localStorage.getItem("token");
     if (!token) {
-      router.push("/user-login?redirect=/Book");
+      router.push("/user-login?redirect=/book");
     } else {
-      router.push("/Book");
+      router.push("/book");
     }
   };
 

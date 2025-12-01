@@ -1,12 +1,12 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { sessionManager } from "@/lib/sessionManager";
 import Toast from "@/components/Toast";
 import React from "react";
 
-export default function AdminLoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -116,15 +116,6 @@ export default function AdminLoginPage() {
             </div>
           )}
 
-          {/* Demo credentials panel (visible for development/demo) */}
-          <div className="bg-white/10 rounded-md p-3 text-xs text-white/90">
-            <div className="mb-2">Demo login — use the credentials below or click <button type="button" onClick={() => { setEmail("admin@example.com"); setPassword("123"); }} className="underline">Use demo</button></div>
-            <div className="flex flex-col gap-1">
-              <div className="text-[13px]"><span className="font-medium">Email:</span> <span className="font-mono">admin@example.com</span></div>
-              <div className="text-[13px]"><span className="font-medium">Password:</span> <span className="font-mono">123</span></div>
-            </div>
-          </div>
-
           <button
             type="submit"
             disabled={loading}
@@ -138,6 +129,14 @@ export default function AdminLoginPage() {
           <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
         )}
     </div>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-slate-600">Loading...</div></div>}>
+      <LoginForm />
+    </Suspense>
   );
 }
 

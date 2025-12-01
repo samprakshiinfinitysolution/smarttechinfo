@@ -91,7 +91,7 @@ export default function ProfilePage() {
   const handleSendOTP = async () => {
     try {
       setVerifying(true);
-      const res = await fetch("http://localhost:5000/api/otp/send-otp-email-change", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/otp/send-otp-email-change`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: formData.email }),
@@ -116,7 +116,7 @@ export default function ProfilePage() {
   const handleVerifyOTP = async () => {
     try {
       setVerifying(true);
-      const res = await fetch("http://localhost:5000/api/otp/verify-otp-email-change", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/otp/verify-otp-email-change`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: formData.email, otp }),
@@ -432,7 +432,7 @@ export default function ProfilePage() {
                   📊 Dashboard
                 </button>
                 <button
-                  onClick={() => router.push("/Book")}
+                  onClick={() => router.push("/book")}
                   className="w-full text-left px-4 py-3 hover:bg-slate-50 rounded-xl transition-all text-slate-700 font-medium"
                 >
                   📅 Book Service

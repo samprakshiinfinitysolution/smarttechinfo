@@ -16,7 +16,7 @@ function AdminDashboard() {
     try {
       const token = localStorage.getItem("adminToken");
       if (token) {
-        let url = `http://localhost:5000/api/admin/stats`;
+        let url = `${process.env.NEXT_PUBLIC_API_URL || ''}/admin/stats`;
         const params = new URLSearchParams();
         if (startDate) params.append('startDate', startDate);
         if (endDate) params.append('endDate', endDate);

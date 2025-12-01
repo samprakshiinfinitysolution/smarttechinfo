@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import {
   User,
   Mail,
@@ -22,7 +22,7 @@ import ThankYouPage from "@/components/thankyouPage";
 import Toast from "@/components/Toast";
 import LocationPicker from "@/components/LocationPicker";
 
-export default function BookPage() {
+function BookingForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [step, setStep] = useState(1);
@@ -47,7 +47,7 @@ export default function BookPage() {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/services/active');
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/services/active`);
         const data = await res.json();
         const servicesList = data.services || [];
         setServices(servicesList);
@@ -73,7 +73,7 @@ export default function BookPage() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      router.push("/user-login?redirect=/Book");
+      router.push("/user-login?redirect=/book");
       return;
     }
     
@@ -109,7 +109,7 @@ export default function BookPage() {
       const token = localStorage.getItem("token");
       if (!token) {
         setToast({ message: "Session expired. Redirecting to login...", type: "error" });
-        setTimeout(() => router.push("/user-login?redirect=/Book"), 2000);
+        setTimeout(() => router.push("/user-login?redirect=/book"), 2000);
         return;
       }
 
@@ -120,10 +120,11 @@ export default function BookPage() {
         date,
         time: timeSlot,
         amount: serviceCharge,
+        ...(issue && { issue }),
         ...(locationCoords && { latitude: locationCoords.lat, longitude: locationCoords.lng }),
       };
 
-      const res = await fetch("http://localhost:5000/api/bookings", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/bookings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -161,7 +162,7 @@ export default function BookPage() {
             Book Your Service
           </h1>
           <p className="text-slate-600 text-lg">
-            Quick, easy, and hassle-free booking in 3 simple steps
+            Quick, easy, and hassle-free booking in 2 simple steps
           </p>
         </div>
 
@@ -170,7 +171,6 @@ export default function BookPage() {
           {[
             { no: 1, label: "Details" },
             { no: 2, label: "Schedule" },
-            { no: 3, label: "Payment" },
           ].map((item, idx) => (
             <div key={item.no} className="flex items-center gap-3">
               <div className="flex flex-col items-center">
@@ -191,7 +191,7 @@ export default function BookPage() {
                   {item.label}
                 </span>
               </div>
-              {idx < 2 && (
+              {idx < 1 && (
                 <div
                   className={`h-1 w-16 md:w-24 rounded-full transition-all ${
                     step > item.no ? "bg-[#0C1B33]" : "bg-slate-200"
@@ -379,100 +379,6 @@ export default function BookPage() {
                       Back
                     </button>
                     <button
-                      onClick={() => setStep(3)}
-                      className="bg-gradient-to-r from-[#0C1B33] to-[#1e3a5f] text-white px-8 py-3 rounded-xl font-semibold flex items-center gap-2 hover:shadow-lg transition-all"
-                    >
-                      Continue
-                      <ArrowRight className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 3 */}
-              {step === 3 && (
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center">
-                      <CreditCard className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold text-slate-900">Payment Method</h2>
-                      <p className="text-sm text-slate-500">Choose how you'd like to pay</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <button
-                      onClick={() => setPaymentMethod("cash")}
-                      className={`w-full flex items-start gap-4 p-5 rounded-xl border-2 transition-all ${
-                        paymentMethod === "cash"
-                          ? "border-[#0C1B33] bg-blue-50"
-                          : "border-slate-200 hover:border-slate-300"
-                      }`}
-                    >
-                      <div
-                        className={`w-6 h-6 rounded-full border-2 mt-1 flex items-center justify-center ${
-                          paymentMethod === "cash"
-                            ? "border-[#0C1B33] bg-[#0C1B33]"
-                            : "border-slate-300"
-                        }`}
-                      >
-                        {paymentMethod === "cash" && (
-                          <div className="w-3 h-3 bg-white rounded-full"></div>
-                        )}
-                      </div>
-                      <div className="flex-1 text-left">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Wallet className="w-5 h-5 text-slate-700" />
-                          <p className="font-bold text-lg text-slate-900">Cash on Service</p>
-                        </div>
-                        <p className="text-sm text-slate-600">
-                          Pay after service completion. Safe and convenient.
-                        </p>
-                      </div>
-                    </button>
-
-                    <button
-                      onClick={() => setPaymentMethod("online")}
-                      className={`w-full flex items-start gap-4 p-5 rounded-xl border-2 transition-all ${
-                        paymentMethod === "online"
-                          ? "border-[#0C1B33] bg-blue-50"
-                          : "border-slate-200 hover:border-slate-300"
-                      }`}
-                    >
-                      <div
-                        className={`w-6 h-6 rounded-full border-2 mt-1 flex items-center justify-center ${
-                          paymentMethod === "online"
-                            ? "border-[#0C1B33] bg-[#0C1B33]"
-                            : "border-slate-300"
-                        }`}
-                      >
-                        {paymentMethod === "online" && (
-                          <div className="w-3 h-3 bg-white rounded-full"></div>
-                        )}
-                      </div>
-                      <div className="flex-1 text-left">
-                        <div className="flex items-center gap-2 mb-1">
-                          <CreditCard className="w-5 h-5 text-slate-700" />
-                          <p className="font-bold text-lg text-slate-900">Pay Online</p>
-                        </div>
-                        <p className="text-sm text-slate-600">
-                          UPI, Cards, Net Banking - Secure payment gateway
-                        </p>
-                      </div>
-                    </button>
-                  </div>
-
-                  <div className="flex justify-between pt-4">
-                    <button
-                      onClick={() => setStep(2)}
-                      className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 transition-all"
-                    >
-                      <ArrowLeft className="w-5 h-5" />
-                      Back
-                    </button>
-                    <button
                       onClick={handleBookingSubmit}
                       className="bg-gradient-to-r from-emerald-500 to-green-600 text-white px-8 py-3 rounded-xl font-semibold flex items-center gap-2 hover:shadow-lg transition-all"
                     >
@@ -482,6 +388,8 @@ export default function BookPage() {
                   </div>
                 </div>
               )}
+
+
             </div>
           </div>
 
@@ -562,5 +470,13 @@ export default function BookPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function BookPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-slate-600">Loading...</div></div>}>
+      <BookingForm />
+    </Suspense>
   );
 }

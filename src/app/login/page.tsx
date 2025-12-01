@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Toast from "@/components/Toast";
 import { LogIn, Sparkles, Mail, KeyRound } from "lucide-react";
@@ -11,7 +11,7 @@ interface LoginProps {
   onOpenSignup?: () => void;
 }
 
-export default function LoginPage({
+function LoginForm({
   onClose,
   onLoginSuccess,
   onOpenSignup,
@@ -50,7 +50,7 @@ export default function LoginPage({
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/otp/send-otp", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/otp/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -82,7 +82,7 @@ export default function LoginPage({
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/otp/verify-otp", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/otp/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp }),
@@ -238,5 +238,13 @@ export default function LoginPage({
         />
       )}
     </div>
+  );
+}
+
+export default function LoginPage(props: LoginProps = {}) {
+  return (
+    <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"><div className="text-white">Loading...</div></div>}>
+      <LoginForm {...props} />
+    </Suspense>
   );
 }

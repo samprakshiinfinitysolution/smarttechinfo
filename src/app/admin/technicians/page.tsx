@@ -28,7 +28,7 @@ export default function TechniciansPage() {
       setLoading(true);
       const token = localStorage.getItem("adminToken");
       if (token) {
-        const url = `http://localhost:5000/api/admin/technicians?page=${currentPage}&limit=${itemsPerPage}&search=${searchTerm}&specialty=${specialtyFilter}`;
+        const url = `${process.env.NEXT_PUBLIC_API_URL || ''}/admin/technicians?page=${currentPage}&limit=${itemsPerPage}&search=${searchTerm}&specialty=${specialtyFilter}`;
         const res = await fetch(url, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -142,7 +142,7 @@ export default function TechniciansPage() {
               const token = localStorage.getItem("adminToken");
               if (token) {
                 try {
-                  const res = await fetch('http://localhost:5000/api/admin/export/technicians', {
+                  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/admin/export/technicians`, {
                     headers: { Authorization: `Bearer ${token}` }
                   });
                   const blob = await res.blob();
