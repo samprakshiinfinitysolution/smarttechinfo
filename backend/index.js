@@ -18,6 +18,7 @@ app.use('/uploads', express.static('uploads'));
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/otp', require('./routes/otpRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/bookings', require('./routes/bookingRoutes'));
 app.use('/api/technicians', require('./routes/technicianRoutes'));

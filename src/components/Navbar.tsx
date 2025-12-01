@@ -194,7 +194,7 @@ export default function Navbar({
           <div ref={phoneRef} className="flex items-center gap-1 text-gray-700">
             <Phone className="w-4 h-4" />
             <a href="tel:919685530890" className="underline">
-              91 96855 30890
+              9685530890
             </a>
           </div>
 
@@ -308,7 +308,7 @@ export default function Navbar({
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4" />
                 <a href="tel:919685530890" className="underline">
-                  91 96855 30890
+                  9685530890
                 </a>
               </div>
 

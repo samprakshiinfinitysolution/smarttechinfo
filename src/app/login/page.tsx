@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Toast from "@/components/Toast";
-import { LogIn, Sparkles } from "lucide-react";
+import { LogIn, Sparkles, Mail, KeyRound } from "lucide-react";
 
 interface LoginProps {
   onClose?: () => void;
@@ -21,7 +21,9 @@ export default function LoginPage({
   const redirectUrl = searchParams?.get("redirect");
   const [isVisible, setIsVisible] = useState(false);
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "warning" } | null>(null);
   const [showWelcome, setShowWelcome] = useState(!!redirectUrl);
 
@@ -40,23 +42,57 @@ export default function LoginPage({
     }, 250);
   };
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      setToast({ message: "Please enter email and password", type: "warning" });
+  const handleSendOTP = async () => {
+    if (!email) {
+      setToast({ message: "Please enter your email", type: "warning" });
       return;
     }
 
+    setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch("http://localhost:5000/api/otp/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        setToast({ message: data.message || "Login failed", type: "error" });
+        setToast({ message: data.message || "Failed to send OTP", type: "error" });
+        setLoading(false);
+        return;
+      }
+
+      setOtpSent(true);
+      setToast({ message: "OTP sent to your email!", type: "success" });
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      setToast({ message: "Backend server not running", type: "error" });
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async () => {
+    if (!otp) {
+      setToast({ message: "Please enter OTP", type: "warning" });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("http://localhost:5000/api/otp/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setToast({ message: data.message || "Invalid OTP", type: "error" });
+        setLoading(false);
         return;
       }
 
@@ -65,6 +101,7 @@ export default function LoginPage({
       window.dispatchEvent(new Event("storage"));
 
       setToast({ message: "Login successful! Redirecting...", type: "success" });
+      setLoading(false);
       
       setTimeout(() => {
         if (redirectUrl) {
@@ -79,6 +116,7 @@ export default function LoginPage({
     } catch (error) {
       console.error(error);
       setToast({ message: "Backend server not running", type: "error" });
+      setLoading(false);
     }
   };
 
@@ -122,27 +160,39 @@ export default function LoginPage({
           </h2>
 
           <label className="text-xs sm:text-sm font-medium flex items-center gap-2 mb-1">
-            <span>📧</span> Email address
+            <Mail className="w-4 h-4" /> Email address
           </label>
           <input
             type="email"
             placeholder="Your email@gmail.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-transparent border border-white/50 rounded-lg px-3 py-2 sm:px-4 sm:py-3 mb-4 focus:outline-none focus:border-white"
+            disabled={otpSent}
+            className="w-full bg-transparent border border-white/50 rounded-lg px-3 py-2 sm:px-4 sm:py-3 mb-4 focus:outline-none focus:border-white disabled:opacity-50"
           />
 
-          <label className="text-xs sm:text-sm font-medium flex items-center gap-2 mb-1">
-            <span>🔒</span> Password
-          </label>
-          <input
-            type="password"
-            placeholder="Password*****"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-            className="w-full bg-transparent border border-white/50 rounded-lg px-3 py-2 sm:px-4 sm:py-3 mb-3 focus:outline-none focus:border-white"
-          />
+          {otpSent && (
+            <>
+              <label className="text-xs sm:text-sm font-medium flex items-center gap-2 mb-1">
+                <KeyRound className="w-4 h-4" /> Enter OTP
+              </label>
+              <input
+                type="text"
+                placeholder="Enter 6-digit OTP"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                onKeyDown={(e) => e.key === "Enter" && handleVerifyOTP()}
+                maxLength={6}
+                className="w-full bg-transparent border border-white/50 rounded-lg px-3 py-2 sm:px-4 sm:py-3 mb-3 focus:outline-none focus:border-white text-center text-2xl tracking-widest"
+              />
+              <button
+                onClick={() => { setOtpSent(false); setOtp(''); }}
+                className="text-xs text-blue-300 hover:text-blue-200 mb-3 underline"
+              >
+                Change email?
+              </button>
+            </>
+          )}
 
           <p className="text-xs sm:text-sm mb-6 text-center md:text-left">
             Don't have an account?{" "}
@@ -158,11 +208,23 @@ export default function LoginPage({
           </p>
 
           <button
-            onClick={handleLogin}
-            className="w-full bg-black/60 hover:bg-black text-white font-semibold py-2 sm:py-3 rounded-full flex items-center justify-center gap-2 transition-all hover:scale-105"
+            onClick={otpSent ? handleVerifyOTP : handleSendOTP}
+            disabled={loading}
+            className="w-full bg-black/60 hover:bg-black text-white font-semibold py-2 sm:py-3 rounded-full flex items-center justify-center gap-2 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <LogIn className="w-5 h-5" />
-            {redirectUrl ? "Login & Continue Booking" : "Login"}
+            {loading ? (
+              <span>Loading...</span>
+            ) : otpSent ? (
+              <>
+                <LogIn className="w-5 h-5" />
+                {redirectUrl ? "Verify & Continue Booking" : "Verify OTP"}
+              </>
+            ) : (
+              <>
+                <Mail className="w-5 h-5" />
+                Send OTP
+              </>
+            )}
           </button>
         </div>
       </div>

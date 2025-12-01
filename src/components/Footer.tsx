@@ -3,9 +3,7 @@ import {
   Mail,
   MapPin,
   Facebook,
-  Twitter,
   Instagram,
-  Linkedin,
 } from "lucide-react";
 
 export default function Footer() {
@@ -20,10 +18,10 @@ export default function Footer() {
           <div className="flex items-center gap-3 mb-4">
             <img
               src="/LOGO1.png"
-              alt="Smart Service"
+              alt="Smart TechInfo"
               className="w-12 h-12 rounded-full bg-white shadow-md shadow-blue-900/40"
             />
-            <h2 className="text-xl font-semibold text-white">Smart Service</h2>
+            <h2 className="text-xl font-semibold text-white">Smart Techinfo</h2>
           </div>
 
           <p className="text-sm leading-relaxed">
@@ -33,16 +31,8 @@ export default function Footer() {
           </p>
 
           <div className="flex items-center gap-4 mt-4 md:hidden">
-            {/** Social Icons Animated */}
-            {[Facebook, Twitter, Instagram, Linkedin].map((Icon, i) => (
-              <a
-                key={i}
-                href="#"
-                className="hover:text-white transition-all duration-300 hover:scale-125"
-              >
-                <Icon className="w-5 h-5" />
-              </a>
-            ))}
+            <a href="https://instagram.com/smart_techinfo" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-all duration-300 hover:scale-125"><Instagram className="w-5 h-5" /></a>
+            <a href="https://facebook.com/Smart-techinfo" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-all duration-300 hover:scale-125"><Facebook className="w-5 h-5" /></a>
           </div>
         </div>
 
@@ -67,7 +57,12 @@ export default function Footer() {
         >
           <h3 className="text-white font-semibold mb-4">Services</h3>
           <ul className="space-y-2 text-sm">
-            {["Washing Machine", "Refrigerator", "Air Conditioner", "Television"].map((service, i) => (
+            {[
+              "Washing Machine",
+              "Refrigerator",
+              "Air Conditioner",
+              "Television",
+            ].map((service, i) => (
               <li
                 key={i}
                 className="cursor-pointer hover:text-white hover:translate-x-2 duration-200"
@@ -86,18 +81,22 @@ export default function Footer() {
 
           <div className="flex items-center gap-3 mb-2">
             <Phone className="w-4 h-4" />
-            <span>+9196855 30890</span>
+            <div className="flex flex-col gap-1">
+              <a href="tel:+919685530890" className="underline hover:text-white">9685530890</a>
+              <a href="tel:+918839665594" className="underline hover:text-white">8839665594</a>
+            </div>
           </div>
 
           <div className="flex items-center gap-3 mb-2">
             <Mail className="w-4 h-4" />
-            <span>info@smartservice.com</span>
+            <a href="mailto:smarttechinfo68@gmail.com" className="underline hover:text-white">smarttechinfo68@gmail.com</a>
           </div>
 
           <div className="flex items-center gap-3">
             <MapPin className="w-4 h-4" />
             <span className="text-sm">
-              123 Service Street, Mumbai,<br /> India
+              123 Service Street, Mumbai,
+              <br /> India
             </span>
           </div>
         </div>
@@ -108,19 +107,12 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
 
           <p className="text-center md:text-left">
-            © 2025 Smart Service. All rights reserved.
+            © 2025 Smart Techinfo. All rights reserved.
           </p>
 
           <div className="hidden md:flex items-center gap-4">
-            {[Facebook, Twitter, Instagram, Linkedin].map((Icon, i) => (
-              <a
-                key={i}
-                href="#"
-                className="hover:text-white transition-all duration-300 hover:scale-125"
-              >
-                <Icon className="w-5 h-5" />
-              </a>
-            ))}
+            <a href="https://instagram.com/smart_techinfo" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-all duration-300 hover:scale-125"><Instagram className="w-5 h-5" /></a>
+            <a href="https://facebook.com/Smart-techinfo" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-all duration-300 hover:scale-125"><Facebook className="w-5 h-5" /></a>
           </div>
 
         </div>

@@ -11,6 +11,8 @@ import {
   X,
   Shield,
   ArrowLeft,
+  KeyRound,
+  CheckCircle2,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import Toast from "@/components/Toast";
@@ -29,6 +31,11 @@ export default function ProfilePage() {
   const [bookingsCount, setBookingsCount] = useState(0);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "warning" } | null>(null);
   const [locationCoords, setLocationCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [emailChanged, setEmailChanged] = useState(false);
+  const [showOtpVerification, setShowOtpVerification] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -81,7 +88,60 @@ export default function ProfilePage() {
     return () => window.removeEventListener('storage', onStorage);
   }, []);
 
-  const handleSave = async () => {
+  const handleSendOTP = async () => {
+    try {
+      setVerifying(true);
+      const res = await fetch("http://localhost:5000/api/otp/send-otp-email-change", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setToast({ message: data.message || "Failed to send OTP", type: "error" });
+        setVerifying(false);
+        return;
+      }
+
+      setOtpSent(true);
+      setToast({ message: "OTP sent to new email!", type: "success" });
+      setVerifying(false);
+    } catch (error) {
+      setToast({ message: "Failed to send OTP", type: "error" });
+      setVerifying(false);
+    }
+  };
+
+  const handleVerifyOTP = async () => {
+    try {
+      setVerifying(true);
+      const res = await fetch("http://localhost:5000/api/otp/verify-otp-email-change", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email, otp }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setToast({ message: data.message || "Invalid OTP", type: "error" });
+        setVerifying(false);
+        return;
+      }
+
+      setToast({ message: "Email verified! Updating profile...", type: "success" });
+      setShowOtpVerification(false);
+      setOtpSent(false);
+      setOtp("");
+      await saveProfile();
+      setVerifying(false);
+    } catch (error) {
+      setToast({ message: "Failed to verify OTP", type: "error" });
+      setVerifying(false);
+    }
+  };
+
+  const saveProfile = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -94,11 +154,24 @@ export default function ProfilePage() {
       localStorage.setItem("user", JSON.stringify(updatedUser));
       setUser(updatedUser);
       setIsEditing(false);
+      setEmailChanged(false);
       window.dispatchEvent(new Event("storage"));
       setToast({ message: "Profile updated successfully!", type: "success" });
     } catch (error) {
       setToast({ message: "Failed to update profile", type: "error" });
     }
+  };
+
+  const handleSave = async () => {
+    // Check if email changed
+    if (formData.email !== user?.email) {
+      setShowOtpVerification(true);
+      setEmailChanged(true);
+      return;
+    }
+    
+    // If email not changed, save directly
+    await saveProfile();
   };
 
   const handleCancel = () => {
@@ -109,6 +182,10 @@ export default function ProfilePage() {
       address: user?.address || "",
     });
     setIsEditing(false);
+    setShowOtpVerification(false);
+    setOtpSent(false);
+    setOtp("");
+    setEmailChanged(false);
   };
 
   return (
@@ -179,12 +256,20 @@ export default function ProfilePage() {
                     Email Address
                   </label>
                   {isEditing ? (
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full border-2 border-slate-400 rounded-xl px-4 py-3 bg-white text-slate-900 focus:border-blue-500 focus:outline-none transition-colors"
-                    />
+                    <div className="space-y-2">
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="w-full border-2 border-slate-400 rounded-xl px-4 py-3 bg-white text-slate-900 focus:border-blue-500 focus:outline-none transition-colors"
+                      />
+                      {formData.email !== user?.email && (
+                        <p className="text-xs text-amber-600 flex items-center gap-1">
+                          <Shield className="w-3 h-3" />
+                          Email change requires OTP verification
+                        </p>
+                      )}
+                    </div>
                   ) : (
                     <p className="text-slate-900 font-medium bg-slate-50 px-4 py-3 rounded-xl">
                       {user?.email || "Not provided"}
@@ -233,7 +318,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {isEditing && (
+              {isEditing && !showOtpVerification && (
                 <div className="flex gap-3 mt-6">
                   <button
                     onClick={handleSave}
@@ -251,19 +336,70 @@ export default function ProfilePage() {
                   </button>
                 </div>
               )}
-            </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-lg p-6">
-              <h2 className="text-xl font-bold text-slate-900 mb-4">Security</h2>
-              <button className="w-full flex items-center gap-4 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl transition-all border border-blue-200">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                  <Shield className="w-6 h-6 text-white" />
+              {showOtpVerification && (
+                <div className="mt-6 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Shield className="w-5 h-5 text-blue-600" />
+                    <h3 className="font-bold text-slate-900">Verify New Email</h3>
+                  </div>
+                  <p className="text-sm text-slate-600 mb-4">
+                    We need to verify your new email: <span className="font-semibold">{formData.email}</span>
+                  </p>
+
+                  {!otpSent ? (
+                    <button
+                      onClick={handleSendOTP}
+                      disabled={verifying}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                    >
+                      <Mail className="w-5 h-5" />
+                      {verifying ? "Sending..." : "Send OTP"}
+                    </button>
+                  ) : (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-sm font-medium text-slate-700 mb-2 block">
+                          Enter 6-digit OTP
+                        </label>
+                        <input
+                          type="tel"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          value={otp}
+                          onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                          maxLength={6}
+                          placeholder="000000"
+                          className="w-full border-2 border-blue-300 rounded-xl px-4 py-3 text-center text-2xl tracking-widest font-bold focus:border-blue-500 focus:outline-none text-slate-900 bg-white"
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleVerifyOTP}
+                          disabled={verifying || otp.length !== 6}
+                          className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                        >
+                          <CheckCircle2 className="w-5 h-5" />
+                          {verifying ? "Verifying..." : "Verify & Save"}
+                        </button>
+                        <button
+                          onClick={() => { setOtpSent(false); setOtp(''); }}
+                          className="px-6 py-3 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl font-semibold transition-all border-2 border-blue-300"
+                        >
+                          Resend
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={handleCancel}
+                    className="w-full mt-3 text-sm text-slate-600 hover:text-slate-900 underline"
+                  >
+                    Cancel email change
+                  </button>
                 </div>
-                <div className="text-left flex-1">
-                  <p className="font-bold text-slate-900 text-lg">Change Password</p>
-                  <p className="text-sm text-slate-600">Update your account password</p>
-                </div>
-              </button>
+              )}
             </div>
           </div>
 

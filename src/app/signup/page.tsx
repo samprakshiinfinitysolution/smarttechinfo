@@ -20,15 +20,14 @@ export default function SignupPage({
   // NEW: States
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "warning" } | null>(null);
 
   const handleSignup = async () => {
-    if (!fullName.trim() || !email.trim() || !password) {
-      setToast({ message: "Please fill name, email and password.", type: 'warning' });
+    if (!fullName.trim() || !email.trim()) {
+      setToast({ message: "Please fill name and email.", type: 'warning' });
       return;
     }
 
@@ -46,7 +45,7 @@ export default function SignupPage({
       const res = await fetch("http://localhost:5000/api/auth/user/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: fullName, email, password, phone }),
+        body: JSON.stringify({ name: fullName, email, phone }),
       });
 
       const data = await res.json();
@@ -162,21 +161,6 @@ export default function SignupPage({
           />
           {phoneError && <p className="text-red-400 text-xs mb-4">{phoneError}</p>}
           {!phoneError && <div className="mb-4"></div>}
-
-          
-
-          <label className="text-sm font-medium flex items-center gap-2 mb-1">
-            <span>🔒</span> Password
-          </label>
-          <input
-            type="password"
-            placeholder="Password*****"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-transparent border border-white/50 rounded-lg px-4 py-3 mb-3 focus:outline-none focus:border-white"
-          />
-
-          {/* Avatar upload removed: backend register route expects JSON (name/email/password) */}
 
           <p className="text-sm mb-6">
             Already have an account?{" "}
