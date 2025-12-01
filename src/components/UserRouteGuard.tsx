@@ -1,0 +1,56 @@
+"use client";
+import { useEffect, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { sessionManager } from '@/lib/sessionManager';
+
+export default function UserRouteGuard({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Skip guard for login/register pages
+    if (pathname === '/user-login' || pathname === '/user-register') {
+      setIsAuthorized(true);
+      setIsLoading(false);
+      return;
+    }
+
+    // Check if user token exists and is valid
+    const userToken = localStorage.getItem('token');
+    
+    if (!userToken || !sessionManager.isTokenValid('user')) {
+      // Redirect to login if no valid token
+      router.push(`/user-login?redirect=${pathname}&unauthorized=true`);
+      return;
+    }
+
+    // Initialize session manager for user
+    sessionManager.init('user');
+    setIsAuthorized(true);
+    setIsLoading(false);
+
+    // Cleanup on unmount
+    return () => {
+      sessionManager.destroy();
+    };
+  }, [pathname, router]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-slate-300 border-t-slate-900 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600">Verifying access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthorized) {
+    return null;
+  }
+
+  return <>{children}</>;
+}

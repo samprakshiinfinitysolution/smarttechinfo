@@ -1,36 +1,170 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 Smart Info Tech - Complete Full Stack Application
 
-## Getting Started
+A comprehensive service management platform with admin dashboard, technician portal, and customer interface.
 
-First, run the development server:
+## 📋 Project Overview
 
+This is a full-stack application built with:
+- **Frontend**: Next.js 15 + React 19 + TypeScript + Tailwind CSS
+- **Backend**: Node.js + Express.js + MongoDB + JWT Authentication
+- **Features**: Admin Dashboard, Booking Management, User Management, Technician Management
+
+## 🎯 Quick Start
+
+### Option 1: Quick Start (Windows)
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Double-click this file:
+start-dev.bat
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Option 2: Manual Start
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**1. Start MongoDB**
+```bash
+net start MongoDB
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**2. Install & Start Backend**
+```bash
+cd backend
+npm install
+node utils/seed.js  # Seed database
+npm run dev         # Start backend on port 5000
+```
 
-## Learn More
+**3. Install & Start Frontend**
+```bash
+# In new terminal, from project root
+npm install
+npm run dev  # Start frontend on port 3000
+```
 
-To learn more about Next.js, take a look at the following resources:
+## 🌐 Access Points
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Home Page**: http://localhost:3000
+- **Admin Login**: http://localhost:3000/admin-login
+- **Admin Dashboard**: http://localhost:3000/admin/dashboard
+- **Backend API**: http://localhost:5000/api
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🔑 Default Credentials
 
-## Deploy on Vercel
+**Admin Login**
+- Email: `admin@example.com`
+- Password: `123`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📁 Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+SmartTechInfo/
+├── backend/              # Express.js API
+│   ├── config/          # Database config
+│   ├── controllers/     # Route handlers
+│   ├── middleware/      # Auth middleware
+│   ├── models/          # MongoDB models
+│   ├── routes/          # API routes
+│   └── utils/           # Utilities & seed
+│
+├── src/
+│   ├── app/
+│   │   ├── admin/       # Admin dashboard pages
+│   │   ├── admin-login/ # Admin login
+│   │   └── page.tsx     # Home page
+│   ├── components/      # React components
+│   └── lib/             # API utilities
+│
+└── public/              # Static assets
+```
+
+## 📚 Documentation
+
+- **[SETUP.md](SETUP.md)** - Detailed setup instructions
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture & diagrams
+- **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** - Complete project overview
+- **[STRUCTURE_VISUAL.md](STRUCTURE_VISUAL.md)** - Visual structure guide
+- **[CHECKLIST.md](CHECKLIST.md)** - Setup & testing checklist
+
+## ✨ Features
+
+### Admin Dashboard
+- ✅ Real-time statistics
+- ✅ Booking management with filters
+- ✅ User management
+- ✅ Technician management
+- ✅ Analytics & reports
+- ✅ Search & filter functionality
+- ✅ Responsive design
+
+### Backend API
+- ✅ RESTful API
+- ✅ JWT authentication
+- ✅ Role-based access control
+- ✅ MongoDB integration
+- ✅ Password hashing
+- ✅ CORS enabled
+
+## 🛠️ Tech Stack
+
+**Frontend**
+- Next.js 15
+- React 19
+- TypeScript
+- Tailwind CSS
+
+**Backend**
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- JWT
+- bcryptjs
+
+## 📡 API Endpoints
+
+### Authentication
+- `POST /api/auth/admin/login` - Admin login
+- `POST /api/auth/technician/login` - Technician login
+- `POST /api/auth/user/register` - User registration
+
+### Admin (Protected)
+- `GET /api/admin/stats` - Dashboard statistics
+- `GET /api/admin/bookings` - All bookings
+- `GET /api/admin/users` - All users
+- `GET /api/admin/technicians` - All technicians
+- `PATCH /api/admin/bookings/:id` - Update booking
+
+## 🧪 Testing
+
+1. **Backend Health Check**
+   ```bash
+   curl http://localhost:5000/api/health
+   ```
+
+2. **Admin Login**
+   ```bash
+   curl -X POST http://localhost:5000/api/auth/admin/login \
+     -H "Content-Type: application/json" \
+     -d '{"email":"admin@example.com","password":"123"}'
+   ```
+
+## 🚀 Deployment
+
+**Frontend**: Deploy to Vercel
+```bash
+npm run build
+```
+
+**Backend**: Deploy to AWS/Heroku/DigitalOcean
+
+**Database**: Use MongoDB Atlas for production
+
+## 📞 Support
+
+For detailed information, check the documentation files listed above.
+
+## 📄 License
+
+This project is for educational and commercial use.
+
+---
+
+**Built with ❤️ using Next.js, Express.js, and MongoDB**
