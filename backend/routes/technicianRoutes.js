@@ -1,17 +1,26 @@
 const express = require('express');
 const router = express.Router();
 const { authMiddleware } = require('../middleware/auth');
-const Booking = require('../models/Booking');
+const techCtrl = require('../controllers/technicianController');
 
-router.get('/my-jobs', authMiddleware, async (req, res) => {
-  try {
-    const bookings = await Booking.find({ technician: req.user.id })
-      .populate('customer', 'name phone')
-      .sort({ date: 1 });
-    res.json(bookings);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+// Technician profile
+router.get('/profile', authMiddleware, techCtrl.getProfile);
+
+// Bookings visible to technician (assigned + pending)
+router.get('/bookings', authMiddleware, techCtrl.getBookings);
+
+// Accept a booking (assign to self)
+router.put('/bookings/accept/:id', authMiddleware, techCtrl.acceptBooking);
+
+// Cancel a booking (by assigned technician)
+router.put('/bookings/cancel/:id', authMiddleware, techCtrl.cancelBooking);
+
+// Update booking status (assigned, on_the_way, in_progress, completed, cancelled)
+router.put('/bookings/status/:id', authMiddleware, techCtrl.updateBookingStatus);
+
+// OTP flows: generate start OTP (admin normally), verify start OTP -> moves to In Progress and sends completion OTP
+router.post('/bookings/generate-start-otp/:id', authMiddleware, techCtrl.generateStartOtp);
+router.post('/bookings/verify-start-otp/:id', authMiddleware, techCtrl.verifyStartOtp);
+router.post('/bookings/verify-complete-otp/:id', authMiddleware, techCtrl.verifyCompleteOtp);
 
 module.exports = router;

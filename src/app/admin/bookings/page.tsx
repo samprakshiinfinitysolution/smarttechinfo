@@ -44,6 +44,8 @@ export default function BookingsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
+  const [selectedBookings, setSelectedBookings] = useState<string[]>([]);
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
 
   useEffect(() => {
     const fetchTechnicians = async () => {
@@ -173,6 +175,18 @@ export default function BookingsPage() {
             </svg>
             Export CSV
           </button>
+          {selectedBookings.length > 0 && (
+            <button
+              onClick={() => setShowBulkDeleteModal(true)}
+              className="px-6 py-3 rounded-xl bg-red-600 text-white hover:bg-red-700 transition-colors flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+              Delete ({selectedBookings.length})
+            </button>
+          )}
           <button
             onClick={() => setShowAddModal(true)}
             className="px-6 py-3 rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition-colors flex items-center gap-2"
@@ -189,6 +203,39 @@ export default function BookingsPage() {
           <table className="w-full">
             <thead className="bg-white border-b border-slate-200">
               <tr>
+                <th className="px-4 py-4 text-left">
+                  <input
+                    type="checkbox"
+                    checked={selectedBookings.length === safeBookings.filter(booking => {
+                      const term = searchTerm.trim().toLowerCase();
+                      const idStr = booking._id ? String(booking._id) : (booking.id ? String(booking.id) : "");
+                      const customerName = booking.customer?.name || booking.customer || "";
+                      const technicianName = booking.technician?.name || booking.technician || "";
+                      const serviceName = booking.service || "";
+                      const matchesSearch = term === "" || idStr.toLowerCase().includes(term) || String(customerName).toLowerCase().includes(term) || String(serviceName).toLowerCase().includes(term) || String(technicianName).toLowerCase().includes(term);
+                      const matchesStatus = statusFilter === "All" || statusFilter === "All Status" || booking.status === statusFilter;
+                      return matchesSearch && matchesStatus;
+                    }).length && safeBookings.length > 0}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        const filtered = safeBookings.filter(booking => {
+                          const term = searchTerm.trim().toLowerCase();
+                          const idStr = booking._id ? String(booking._id) : (booking.id ? String(booking.id) : "");
+                          const customerName = booking.customer?.name || booking.customer || "";
+                          const technicianName = booking.technician?.name || booking.technician || "";
+                          const serviceName = booking.service || "";
+                          const matchesSearch = term === "" || idStr.toLowerCase().includes(term) || String(customerName).toLowerCase().includes(term) || String(serviceName).toLowerCase().includes(term) || String(technicianName).toLowerCase().includes(term);
+                          const matchesStatus = statusFilter === "All" || statusFilter === "All Status" || booking.status === statusFilter;
+                          return matchesSearch && matchesStatus;
+                        });
+                        setSelectedBookings(filtered.map(b => b._id));
+                      } else {
+                        setSelectedBookings([]);
+                      }
+                    }}
+                    className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-2 focus:ring-slate-400 cursor-pointer"
+                  />
+                </th>
                 <th className="px-6 py-4 text-left text-sm font-medium text-slate-700">Booking ID</th>
                 <th className="px-6 py-4 text-left text-sm font-medium text-slate-700">Customer</th>
                 <th className="px-6 py-4 text-left text-sm font-medium text-slate-700">Service</th>
@@ -236,6 +283,20 @@ export default function BookingsPage() {
                 })
                 .map((booking, i) => (
                 <tr key={i} className="border-b border-slate-100 hover:bg-slate-50">
+                  <td className="px-4 py-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedBookings.includes(booking._id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedBookings([...selectedBookings, booking._id]);
+                        } else {
+                          setSelectedBookings(selectedBookings.filter(id => id !== booking._id));
+                        }
+                      }}
+                      className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-2 focus:ring-slate-400 cursor-pointer"
+                    />
+                  </td>
                   <td className="px-6 py-4 text-sm font-medium text-slate-900">{booking._id ? String(booking._id).slice(-6) : (booking.id || 'N/A')}</td>
                   <td className="px-6 py-4 text-sm text-slate-700">{booking.customer?.name || booking.customer?.email || String(booking.customer) || 'N/A'}</td>
                   <td className="px-6 py-4 text-sm text-slate-700">{booking.service}</td>
@@ -737,6 +798,89 @@ export default function BookingsPage() {
         />,
         document.body
       )}
+      {showBulkDeleteModal && typeof document !== "undefined" && createPortal(
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                  <svg className="w-6 h-6 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-slate-900">Delete Bookings</h2>
+              </div>
+              <button onClick={() => setShowBulkDeleteModal(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                <svg className="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div className="bg-red-50 p-4 rounded-xl border-2 border-red-200">
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-red-600 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
+                  <div>
+                    <p className="font-semibold text-red-900 text-sm mb-1">Warning: This action cannot be undone</p>
+                    <p className="text-xs text-red-700">You are about to permanently delete {selectedBookings.length} booking{selectedBookings.length > 1 ? 's' : ''}. All data will be lost.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3 pt-6">
+              <button 
+                onClick={() => setShowBulkDeleteModal(false)} 
+                className="flex-1 px-4 py-3 rounded-xl border-2 border-slate-300 text-slate-700 hover:bg-slate-50 font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={async () => {
+                  setIsSubmitting(true);
+                  try {
+                    const token = localStorage.getItem("adminToken");
+                    if (token) {
+                      await Promise.all(selectedBookings.map(id => api.adminDeleteBooking(token, id)));
+                      const data = await api.getAllBookings(token);
+                      setBookings(data.bookings ? data.bookings : (Array.isArray(data) ? data : []));
+                      setSelectedBookings([]);
+                      setShowBulkDeleteModal(false);
+                      setToast({ message: `Successfully deleted ${selectedBookings.length} booking${selectedBookings.length > 1 ? 's' : ''}`, type: 'success' });
+                    }
+                  } catch (error) {
+                    console.error("Error deleting bookings:", error);
+                    setToast({ message: 'Failed to delete some bookings', type: 'error' });
+                  } finally {
+                    setIsSubmitting(false);
+                  }
+                }}
+                disabled={isSubmitting}
+                className="flex-1 px-4 py-3 rounded-xl bg-red-600 text-white hover:bg-red-700 font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                    Delete {selectedBookings.length} Booking{selectedBookings.length > 1 ? 's' : ''}
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   );

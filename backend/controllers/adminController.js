@@ -492,10 +492,14 @@ exports.createTechnician = async (req, res) => {
   try {
     const { name, email, phone, password, specialty, street, city, state, pincode } = req.body;
     const bcrypt = require('bcryptjs');
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // If password not provided by admin, generate a random temporary password
+    const tempPassword = password || Math.random().toString(36).slice(-8);
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
     const technician = new Technician({ name, email, phone, password: hashedPassword, specialty, street, city, state, pincode });
     await technician.save();
-    res.status(201).json({ message: 'Technician created successfully', technician: { ...technician.toObject(), password: undefined } });
+    const response = { ...technician.toObject(), password: undefined };
+    // Return temporary password so admin can communicate it securely to technician
+    res.status(201).json({ message: 'Technician created successfully', technician: response, tempPassword });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -504,7 +508,7 @@ exports.createTechnician = async (req, res) => {
 exports.updateTechnician = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, phone, specialty, status, street, city, state, pincode } = req.body;
+    const { name, email, phone, specialty, status, street, city, state, pincode, password } = req.body;
     const updates = {};
     if (name !== undefined) updates.name = name;
     if (email !== undefined) updates.email = email;
@@ -515,6 +519,12 @@ exports.updateTechnician = async (req, res) => {
     if (city !== undefined) updates.city = city;
     if (state !== undefined) updates.state = state;
     if (pincode !== undefined) updates.pincode = pincode;
+    
+    // Hash password if provided
+    if (password !== undefined && password !== '') {
+      const bcrypt = require('bcryptjs');
+      updates.password = await bcrypt.hash(password, 10);
+    }
 
     const technician = await Technician.findByIdAndUpdate(id, updates, { new: true }).select('-password');
     res.json(technician);

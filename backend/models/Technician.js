@@ -10,7 +10,7 @@ const technicianSchema = new mongoose.Schema({
   },
   phone: { 
     type: String, 
-    required: true,
+    required: false,
     match: [/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian phone number']
   },
   password: { type: String, required: true },

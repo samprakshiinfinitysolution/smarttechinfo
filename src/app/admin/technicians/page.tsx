@@ -24,6 +24,7 @@ export default function TechniciansPage() {
   const [totalCount, setTotalCount] = useState(0);
   const itemsPerPage = 10;
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error' | 'warning' | 'info'} | null>(null);
+  const [showEditPassword, setShowEditPassword] = useState(false);
 
   const fetchTechnicians = async () => {
     try {
@@ -496,7 +497,8 @@ export default function TechniciansPage() {
             <form onSubmit={async (e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
-              const updates = {
+              const password = formData.get('password') as string;
+              const updates: any = {
                 name: formData.get('name'),
                 email: formData.get('email'),
                 phone: formData.get('phone'),
@@ -507,6 +509,14 @@ export default function TechniciansPage() {
                 state: formData.get('state'),
                 pincode: formData.get('pincode')
               };
+              
+              // Only include password if provided
+              if (password && password.trim() !== '') {
+                if (!validatePassword(password)) {
+                  return;
+                }
+                updates.password = password;
+              }
               try {
                 const token = localStorage.getItem("adminToken");
                 if (token) {
@@ -557,19 +567,60 @@ export default function TechniciansPage() {
                   </select>
                 </div>
               </div>
-              <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>
-                  Specialty *
-                </label>
-                <select name="specialty" defaultValue={showEditModal.specialty} required className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 font-medium">
-                  <option value="AC Repair">AC Repair</option>
-                  <option value="Washing Machine">Washing Machine</option>
-                  <option value="Refrigerator">Refrigerator</option>
-                  <option value="TV Repair">TV Repair</option>
-                  <option value="Microwave">Microwave</option>
-                  <option value="Geyser Repair">Geyser Repair</option>
-                </select>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>
+                    Specialty *
+                  </label>
+                  <select name="specialty" defaultValue={showEditModal.specialty} required className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 font-medium">
+                    <option value="AC Repair">AC Repair</option>
+                    <option value="Washing Machine">Washing Machine</option>
+                    <option value="Refrigerator">Refrigerator</option>
+                    <option value="TV Repair">TV Repair</option>
+                    <option value="Microwave">Microwave</option>
+                    <option value="Geyser Repair">Geyser Repair</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                    New Password
+                  </label>
+                  <div className="relative">
+                    <input 
+                      name="password" 
+                      type={showEditPassword ? "text" : "password"}
+                      onChange={(e) => e.target.value && validatePassword(e.target.value)}
+                      className="w-full px-4 py-3 pr-12 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400" 
+                      placeholder="Leave blank to keep current" 
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowEditPassword(!showEditPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 rounded-full transition-colors"
+                    >
+                      {showEditPassword ? (
+                        <svg className="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                          <line x1="1" y1="1" x2="23" y2="23" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                  {passwordError && (
+                    <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                      {passwordError}
+                    </p>
+                  )}
+                  <p className="text-xs text-slate-500 mt-1">Min 8 chars, uppercase, lowercase, number, special char</p>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
