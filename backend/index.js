@@ -11,11 +11,28 @@ const app = express();
 connectDB();
 
 // Middleware
-app.use(cors({
-    origin: "*",       // or specific domain
-    methods: "GET,POST,PUT,DELETE,OPTIONS",
-    allowedHeaders: "Content-Type, Authorization"
-}));
+// Production-ready CORS: allow requests from configured FRONTEND_URL
+// Default frontend for local development is now http://localhost:5004
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5004';
+app.set('trust proxy', 1); // trust first proxy when behind nginx or other proxies
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // allow requests with no origin (curl, Postman)
+    if (!origin) return callback(null, true);
+    if (origin === FRONTEND_URL) return callback(null, true);
+    // allow localhost during development
+    if (origin.startsWith('http://localhost')) return callback(null, true);
+    return callback(new Error('CORS policy: This origin is not allowed'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('uploads'));
@@ -39,7 +56,8 @@ app.get('/', (req, res) => {
   res.send('✅ SmartTechInfo Run successfully');
 });
 
-const PORT = process.env.PORT || 5000;
+// Default backend port for local development is now 5003
+const PORT = process.env.PORT || 5004;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
