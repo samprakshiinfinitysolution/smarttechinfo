@@ -490,10 +490,10 @@ exports.deleteUser = async (req, res) => {
 
 exports.createTechnician = async (req, res) => {
   try {
-    const { name, email, phone, password, specialty } = req.body;
+    const { name, email, phone, password, specialty, street, city, state, pincode } = req.body;
     const bcrypt = require('bcryptjs');
     const hashedPassword = await bcrypt.hash(password, 10);
-    const technician = new Technician({ name, email, phone, password: hashedPassword, specialty });
+    const technician = new Technician({ name, email, phone, password: hashedPassword, specialty, street, city, state, pincode });
     await technician.save();
     res.status(201).json({ message: 'Technician created successfully', technician: { ...technician.toObject(), password: undefined } });
   } catch (error) {
@@ -504,13 +504,17 @@ exports.createTechnician = async (req, res) => {
 exports.updateTechnician = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, phone, specialty, status } = req.body;
+    const { name, email, phone, specialty, status, street, city, state, pincode } = req.body;
     const updates = {};
     if (name !== undefined) updates.name = name;
     if (email !== undefined) updates.email = email;
     if (phone !== undefined) updates.phone = phone;
     if (specialty !== undefined) updates.specialty = specialty;
     if (status !== undefined) updates.status = status;
+    if (street !== undefined) updates.street = street;
+    if (city !== undefined) updates.city = city;
+    if (state !== undefined) updates.state = state;
+    if (pincode !== undefined) updates.pincode = pincode;
 
     const technician = await Technician.findByIdAndUpdate(id, updates, { new: true }).select('-password');
     res.json(technician);

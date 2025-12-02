@@ -650,6 +650,7 @@ function EditForm({ user, onClose, onSaved }: { user:any; onClose: ()=>void; onS
   const [phone, setPhone] = useState(user?.phone || '');
   const [address, setAddress] = useState(user?.address || '');
   const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   useEffect(()=>{
     if (user){
@@ -665,8 +666,12 @@ function EditForm({ user, onClose, onSaved }: { user:any; onClose: ()=>void; onS
       setSaving(true);
       const token = localStorage.getItem('adminToken') || '';
       const updated = await api.adminUpdateUser(token, user._id, { name, email, phone, address });
-      await onSaved(updated);
-    }catch(e){ console.error(e); }
+      setToast({ message: 'User updated successfully!', type: 'success' });
+      setTimeout(() => onSaved(updated), 1000);
+    }catch(e){ 
+      console.error(e); 
+      setToast({ message: 'Failed to update user', type: 'error' });
+    }
     finally{ setSaving(false); }
   };
 
@@ -741,6 +746,7 @@ function EditForm({ user, onClose, onSaved }: { user:any; onClose: ()=>void; onS
           </button>
         </div>
       </div>
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   );
 }

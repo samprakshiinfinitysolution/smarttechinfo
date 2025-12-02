@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { api } from "@/lib/api";
 import { createPortal } from "react-dom";
+import Toast from "@/components/Toast";
 
 export default function TechniciansPage() {
   const [technicians, setTechnicians] = useState<any[]>([]);
@@ -22,6 +23,7 @@ export default function TechniciansPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const itemsPerPage = 10;
+  const [toast, setToast] = useState<{message: string, type: 'success' | 'error' | 'warning' | 'info'} | null>(null);
 
   const fetchTechnicians = async () => {
     try {
@@ -453,16 +455,17 @@ export default function TechniciansPage() {
                     if (token) {
                       const result = await api.deleteTechnician(token, showRemoveModal._id);
                       if (result.hasActiveBookings) {
-                        alert(result.message);
+                        setToast({ message: result.message, type: 'warning' });
                         return;
                       }
                       const data = await api.getAllTechnicians(token);
                       setTechnicians(Array.isArray(data) ? data : []);
                       setShowRemoveModal(null);
+                      setToast({ message: 'Technician deleted successfully!', type: 'success' });
                     }
                   } catch (error) {
                     console.error("Error deleting technician:", error);
-                    alert("Failed to delete technician");
+                    setToast({ message: 'Failed to delete technician', type: 'error' });
                   }
                 }}
                 className="flex-1 px-4 py-3 rounded-xl bg-red-600 text-white hover:bg-red-700 font-semibold transition-colors flex items-center justify-center gap-2"
@@ -498,7 +501,11 @@ export default function TechniciansPage() {
                 email: formData.get('email'),
                 phone: formData.get('phone'),
                 specialty: formData.get('specialty'),
-                status: formData.get('status')
+                status: formData.get('status'),
+                street: formData.get('street'),
+                city: formData.get('city'),
+                state: formData.get('state'),
+                pincode: formData.get('pincode')
               };
               try {
                 const token = localStorage.getItem("adminToken");
@@ -507,9 +514,11 @@ export default function TechniciansPage() {
                   const data = await api.getAllTechnicians(token);
                   setTechnicians(Array.isArray(data) ? data : []);
                   setShowEditModal(null);
+                  setToast({ message: 'Technician updated successfully!', type: 'success' });
                 }
               } catch (error) {
                 console.error("Error updating technician:", error);
+                setToast({ message: 'Failed to update technician', type: 'error' });
               }
             }} className="space-y-5">
               <div className="grid grid-cols-2 gap-4">
@@ -561,6 +570,26 @@ export default function TechniciansPage() {
                   <option value="Microwave">Microwave</option>
                   <option value="Geyser Repair">Geyser Repair</option>
                 </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-2 block">Street</label>
+                  <input name="street" defaultValue={showEditModal.street} className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400" placeholder="123 Main St" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-2 block">City</label>
+                  <input name="city" defaultValue={showEditModal.city} className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400" placeholder="Mumbai" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-2 block">State</label>
+                  <input name="state" defaultValue={showEditModal.state} className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400" placeholder="Maharashtra" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-2 block">Pincode</label>
+                  <input name="pincode" type="text" pattern="[0-9]{6}" maxLength={6} defaultValue={showEditModal.pincode} className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400" placeholder="400001" />
+                </div>
               </div>
               <div className="flex gap-3 pt-4">
                 <button type="button" onClick={() => setShowEditModal(null)} className="flex-1 px-4 py-3 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium transition-colors">
@@ -693,7 +722,11 @@ export default function TechniciansPage() {
                 email: formData.get('email'),
                 phone: formData.get('phone'),
                 password: password,
-                specialty: formData.get('specialty')
+                specialty: formData.get('specialty'),
+                street: formData.get('street'),
+                city: formData.get('city'),
+                state: formData.get('state'),
+                pincode: formData.get('pincode')
               };
               try {
                 const token = localStorage.getItem("adminToken");
@@ -703,9 +736,11 @@ export default function TechniciansPage() {
                   setTechnicians(Array.isArray(updatedData) ? updatedData : []);
                   setShowAddModal(false);
                   setPasswordError('');
+                  setToast({ message: 'Technician created successfully!', type: 'success' });
                 }
               } catch (error) {
                 console.error("Error creating technician:", error);
+                setToast({ message: 'Failed to create technician', type: 'error' });
               }
             }} className="space-y-5">
               <div className="grid grid-cols-2 gap-4">
@@ -768,6 +803,26 @@ export default function TechniciansPage() {
                   <option value="Microwave">Microwave</option>
                   <option value="Geyser Repair">Geyser Repair</option>
                 </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-2 block">Street</label>
+                  <input name="street" className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400" placeholder="123 Main St" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-2 block">City</label>
+                  <input name="city" className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400" placeholder="Mumbai" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-2 block">State</label>
+                  <input name="state" className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400" placeholder="Maharashtra" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-2 block">Pincode</label>
+                  <input name="pincode" type="text" pattern="[0-9]{6}" maxLength={6} className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400" placeholder="400001" />
+                </div>
               </div>
               <div className="flex gap-3 pt-4">
                 <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 px-4 py-3 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium transition-colors">
@@ -832,6 +887,8 @@ export default function TechniciansPage() {
         </div>,
         document.body
       )}
+
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   );
 }
