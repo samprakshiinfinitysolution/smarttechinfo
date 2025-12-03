@@ -37,6 +37,12 @@ export default function ServicesPage() {
     }
   };
 
+  const resolveImage = (img?: string) => {
+    if (!img) return "";
+    const base = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/api$/,'');
+    return img.startsWith('http') ? img : `${base}${img}`;
+  };
+
   useEffect(() => {
     fetchServices();
   }, []);
@@ -184,7 +190,7 @@ export default function ServicesPage() {
         {filteredServices.map((service) => (
           <div key={service._id} className="bg-slate-50 rounded-xl border-2 border-slate-200 overflow-hidden hover:shadow-xl hover:border-slate-300 transition-all group">
             <div className="relative">
-              <img src={`${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/api$/,'')}${service.image}`} alt={service.name} className="w-full h-48 object-cover group-hover:scale-105 transition-transform" />
+              <img src={resolveImage(service.image)} alt={service.name} className="w-full h-48 object-cover group-hover:scale-105 transition-transform" />
               <span className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold shadow-lg ${service.isActive ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
                 {service.isActive ? 'Active' : 'Inactive'}
               </span>
@@ -294,7 +300,7 @@ export default function ServicesPage() {
                 </label>
                 <input name="image" type="file" accept="image/*" onChange={handleImageChange} required={!showEditModal} className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200" />
                 {(imagePreview || showEditModal?.image) && (
-                  <img src={imagePreview || `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/api$/,'')}${showEditModal.image}`} alt="Preview" className="mt-2 w-32 h-32 object-cover rounded-lg" />
+                  <img src={imagePreview || resolveImage(showEditModal?.image)} alt="Preview" className="mt-2 w-32 h-32 object-cover rounded-lg" />
                 )}
               </div>
               {showEditModal && (
