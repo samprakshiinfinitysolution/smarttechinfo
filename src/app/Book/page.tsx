@@ -45,7 +45,7 @@ function BookingForm() {
   const [locationCoords, setLocationCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
-    const fetchServices = async () => {
+        const fetchServices = async () => {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/services/active`);
         const data = await res.json();
@@ -54,15 +54,21 @@ function BookingForm() {
         
         const chargesMap: Record<string, number> = {};
         servicesList.forEach((s: any) => {
-          chargesMap[s.name] = s.serviceCharges;
+          // prefer serviceCharges, fallback to price
+          chargesMap[s.name] = s.serviceCharges ?? s.price ?? 0;
         });
         setServiceCharges(chargesMap);
         
         // Auto-select service from URL parameter
-        const serviceParam = searchParams.get('service');
-        if (serviceParam && chargesMap[serviceParam]) {
-          setService(serviceParam);
-        }
+            const serviceParam = searchParams.get('service');
+            const priceParam = searchParams.get('price');
+            if (serviceParam) {
+              setService(serviceParam);
+              // If price provided in URL, prefer it for this session
+              if (priceParam && !isNaN(Number(priceParam))) {
+                setServiceCharges(prev => ({ ...prev, [serviceParam]: Number(priceParam) }));
+              }
+            }
       } catch (error) {
         console.error('Error fetching services:', error);
       }

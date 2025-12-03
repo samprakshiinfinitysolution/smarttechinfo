@@ -38,16 +38,21 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('uploads'));
 
 // Routes
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/otp', require('./routes/otpRoutes'));
-app.use('/api/admin', require('./routes/adminRoutes'));
-app.use('/api/bookings', require('./routes/bookingRoutes'));
-app.use('/api/technicians', require('./routes/technicianRoutes'));
-app.use('/api/users', require('./routes/userRoutes'));
-app.use('/api/services', require('./routes/serviceRoutes'));
+app.use('/auth', require('./routes/authRoutes'));
+app.use('/otp', require('./routes/otpRoutes'));
+app.use('/admin', require('./routes/adminRoutes'));
+app.use('/bookings', require('./routes/bookingRoutes'));
+app.use('/technicians', require('./routes/technicianRoutes'));
+app.use('/users', require('./routes/userRoutes'));
+app.use('/services', require('./routes/serviceRoutes'));
 
 // Health check
-app.get('/api/health', (req, res) => {
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK', message: 'Server is running' });
+});
+
+// Also expose health at /health to support proxies that strip the /api prefix
+app.get('/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
 });
 

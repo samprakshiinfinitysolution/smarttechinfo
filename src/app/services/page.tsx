@@ -13,7 +13,7 @@ export default function Services() {
 
   const fetchServices = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/services/active');
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/services/active`);
       const data = await res.json();
       setServices(data.services || []);
     } catch (error) {
@@ -53,64 +53,70 @@ export default function Services() {
           <p className="text-gray-500">Please check back later for our services.</p>
         </div>
       ) : (
-        <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4">
           {services.map((item: any, index: number) => (
           <div
             key={item._id ?? item.id ?? index}
             className="
-              relative bg-white rounded-2xl border border-gray-200 
+              relative bg-white rounded-xl border border-gray-200 
               shadow-sm p-4 transition-all duration-300 
-              hover:shadow-2xl hover:scale-[1.04] hover:border-gray-300
-              flex flex-col justify-between
+              hover:shadow-xl hover:scale-[1.02] hover:border-gray-300
+              flex flex-col
             "
           >
             {/* Top Badge */}
-            <div className="absolute top-3 left-3 bg-[#0C1B33] text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
-              Expert Assured
+            <div className="absolute top-2 left-2 bg-[#0C1B33] text-white text-[10px] font-semibold px-2.5 py-1 rounded-full shadow-md z-10">
+              Expert
             </div>
 
             {/* Tool Icon */}
-            <div className="absolute top-3 right-3 text-gray-600 text-xl">
+            <div className="absolute top-2 right-2 text-gray-600 text-lg z-10">
               🛠️
             </div>
 
             {/* Image */}
-            <div className="overflow-hidden rounded-xl mt-6 flex-1 flex items-center justify-center">
+            <div className="overflow-hidden rounded-lg mt-7 mb-3 flex items-center justify-center bg-gray-50">
               <img
-                src={item.image ? (item.image.startsWith('http') ? item.image : `http://localhost:5000${item.image}`) : '/placeholder.jpg'}
+                src={item.image ? (item.image.startsWith('http') ? item.image : `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/api$/,'')}${item.image}`) : '/placeholder.jpg'}
                 alt={item.name || item.title}
-                className="w-full h-56 object-contain transition-all duration-300 hover:scale-110"
+                className="w-full h-36 object-contain transition-all duration-300 hover:scale-110"
               />
             </div>
 
-            {/* Bottom Section */}
-            <div className="border-t mt-4 pt-4 flex items-center justify-between">
-              <div>
-                <h4 className="text-lg font-semibold">{item.name || item.title}</h4>
-                {item.serviceCharges && (
-                  <div className="mt-2">
-                    <p className="text-gray-500 text-xs">Service Charge</p>
-                    <p className="text-blue-600 font-bold text-lg">₹{item.serviceCharges}</p>
-                  </div>
-                )}
-              </div>
+            {/* Content Section */}
+            <div className="flex flex-col">
+              <h4 className="text-sm sm:text-base font-semibold text-gray-900 mb-1 line-clamp-1">
+                {item.name || item.title}
+              </h4>
+              <p className="text-gray-500 text-xs mb-2.5 line-clamp-1">
+                {item.category || item.subtitle}
+              </p>
+              
+              {/* Service Charge */}
+              { (item.serviceCharges || item.price) && (
+                <div className="bg-blue-50 rounded-lg px-3 py-2 mb-3 flex items-baseline justify-between gap-2">
+                  <span className="text-xs text-gray-600 whitespace-nowrap">Service Charge:</span>
+                  <span className="text-lg font-bold text-blue-600">
+                    ₹{item.serviceCharges ?? item.price}
+                  </span>
+                </div>
+              )}
 
-                {/* ⭐ Perfect Responsive Button ⭐ */}
-                <Link href={`/book?service=${encodeURIComponent(item.name || item.title)}`}>
+              {/* Book Now Button */}
+              <Link href={`/book?service=${encodeURIComponent(item.name || item.title)}&price=${encodeURIComponent(item.serviceCharges ?? item.price ?? '')}&serviceId=${encodeURIComponent(item._id ?? '')}`}>
                 <button
-                className="
-                  bg-linear-to-r from-[#0C1B33] to-[#1d2d50]
-                  text-white px-4 py-2 rounded-xl text-sm font-medium
-                  min-w-[110px] text-center
-                  transition-all duration-300
-                  hover:from-[#1d2d50] hover:to-[#0C1B33]
-                  hover:shadow-lg hover:shadow-blue-300/30 
-                  hover:scale-110 active:scale-95
-                "
-              >
-                Book Now
-              </button>
-                </Link>
+                  className="
+                    w-full bg-gradient-to-r from-[#0C1B33] to-[#1d2d50]
+                    text-white px-4 py-2.5 rounded-lg text-sm font-medium
+                    transition-all duration-300
+                    hover:from-[#1d2d50] hover:to-[#0C1B33]
+                    hover:shadow-lg hover:shadow-blue-300/30 
+                    hover:scale-[1.02] active:scale-95
+                  "
+                >
+                  Book Now
+                </button>
+              </Link>
             </div>
           </div>
           ))}
