@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Disallow admin area from crawling
+Disallow: /admin
+
+# Point search engines to the sitemap
+Sitemap: https://smarttechinfo.in/sitemap.xml
+Host: https://smarttechinfo.in
+
+# Crawl-delay can be specified if needed (seconds)
+# Crawl-delay: 10
