@@ -90,6 +90,16 @@ export default function BookingsPage() {
 
   const safeBookings = Array.isArray(bookings) ? bookings : [];
 
+  const getServiceName = (val: any) => {
+    if (!val) return '';
+    if (typeof val === 'object') {
+      return val.name || String(val);
+    }
+    const str = String(val);
+    const found = services.find(s => s._id === str || String(s._id) === str || s.name === str);
+    return found ? found.name : str;
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Completed": return "bg-emerald-100 text-emerald-800";
@@ -223,7 +233,7 @@ export default function BookingsPage() {
                       const idStr = booking._id ? String(booking._id) : (booking.id ? String(booking.id) : "");
                       const customerName = booking.customer?.name || booking.customer || "";
                       const technicianName = booking.technician?.name || booking.technician || "";
-                      const serviceName = booking.service || "";
+                      const serviceName = getServiceName(booking.service);
                       const matchesSearch = term === "" || idStr.toLowerCase().includes(term) || String(customerName).toLowerCase().includes(term) || String(serviceName).toLowerCase().includes(term) || String(technicianName).toLowerCase().includes(term);
                       const matchesStatus = statusFilter === "All" || statusFilter === "All Status" || booking.status === statusFilter;
                       return matchesSearch && matchesStatus;
@@ -235,7 +245,7 @@ export default function BookingsPage() {
                           const idStr = booking._id ? String(booking._id) : (booking.id ? String(booking.id) : "");
                           const customerName = booking.customer?.name || booking.customer || "";
                           const technicianName = booking.technician?.name || booking.technician || "";
-                          const serviceName = booking.service || "";
+                          const serviceName = getServiceName(booking.service);
                           const matchesSearch = term === "" || idStr.toLowerCase().includes(term) || String(customerName).toLowerCase().includes(term) || String(serviceName).toLowerCase().includes(term) || String(technicianName).toLowerCase().includes(term);
                           const matchesStatus = statusFilter === "All" || statusFilter === "All Status" || booking.status === statusFilter;
                           return matchesSearch && matchesStatus;
@@ -282,7 +292,7 @@ export default function BookingsPage() {
                   const idStr = booking._id ? String(booking._id) : (booking.id ? String(booking.id) : "");
                   const customerName = booking.customer?.name || booking.customer || "";
                   const technicianName = booking.technician?.name || booking.technician || "";
-                  const serviceName = booking.service || "";
+                  const serviceName = getServiceName(booking.service);
 
                   const matchesSearch = term === "" ||
                     idStr.toLowerCase().includes(term) ||
@@ -311,7 +321,7 @@ export default function BookingsPage() {
                   </td>
                   <td className="px-6 py-4 text-sm font-medium text-slate-900">{booking._id ? String(booking._id).slice(-6) : (booking.id || 'N/A')}</td>
                   <td className="px-6 py-4 text-sm text-slate-700">{booking.customer?.name || booking.customer?.email || String(booking.customer) || 'N/A'}</td>
-                  <td className="px-6 py-4 text-sm text-slate-700">{booking.service}</td>
+                  <td className="px-6 py-4 text-sm text-slate-700">{getServiceName(booking.service)}</td>
                   <td className="px-6 py-4 text-sm text-slate-700">{booking.technician?.name || booking.technician || 'Unassigned'}</td>
                   <td className="px-6 py-4 text-sm text-slate-700">
                     <div className="flex flex-col">
@@ -443,6 +453,7 @@ export default function BookingsPage() {
         <AssignTechnicianModal
           booking={showAssignModal}
           technicians={technicians}
+          services={services}
           onClose={() => setShowAssignModal(null)}
           onSuccess={async () => {
             const token = localStorage.getItem("adminToken");
@@ -1043,14 +1054,22 @@ function AddBookingModal({ users, technicians, services, onClose, onSuccess }: {
   );
 }
 
-function AssignTechnicianModal({ booking, technicians, onClose, onSuccess, onError, onWarning }: {
+function AssignTechnicianModal({ booking, technicians, services, onClose, onSuccess, onError, onWarning }: {
   booking: any;
   technicians: any[];
+  services: any[];
   onClose: () => void;
   onSuccess: () => void;
   onError: (msg: string) => void;
   onWarning: (msg: string) => void;
 }) {
+  const getServiceName = (val: any) => {
+    if (!val) return '';
+    if (typeof val === 'object') return val.name || String(val);
+    const str = String(val);
+    const found = services.find(s => s._id === str || String(s._id) === str || s.name === str);
+    return found ? found.name : str;
+  };
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState('All');
@@ -1069,7 +1088,7 @@ function AssignTechnicianModal({ booking, technicians, onClose, onSuccess, onErr
     return map[service] || [];
   };
 
-  const recommendedSpecialties = getServiceSpecialty(booking.service);
+  const recommendedSpecialties = getServiceSpecialty(getServiceName(booking.service));
 
   // Filter technicians
   const filteredTechnicians = technicians.filter(tech => {
@@ -1140,7 +1159,7 @@ function AssignTechnicianModal({ booking, technicians, onClose, onSuccess, onErr
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <p className="text-xs text-slate-600 mb-1">Service</p>
-              <p className="font-semibold text-slate-900">{booking.service}</p>
+              <p className="font-semibold text-slate-900">{getServiceName(booking.service)}</p>
             </div>
             <div>
               <p className="text-xs text-slate-600 mb-1">Customer</p>
