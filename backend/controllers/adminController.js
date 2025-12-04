@@ -501,6 +501,8 @@ exports.createTechnician = async (req, res) => {
     let normalizedSpecialties = [];
     if (Array.isArray(specialties) && specialties.length > 0) normalizedSpecialties = specialties.map(s => String(s).trim()).filter(Boolean);
     else if (typeof specialty === 'string' && specialty.trim() !== '') normalizedSpecialties = [specialty.trim()];
+    // Deduplicate specialties to avoid storing duplicates
+    normalizedSpecialties = Array.from(new Set(normalizedSpecialties));
 
     const technician = new Technician({ name, email, phone, password: hashedPassword, specialties: normalizedSpecialties, street, city, state, pincode });
     await technician.save();
@@ -522,7 +524,7 @@ exports.updateTechnician = async (req, res) => {
     if (phone !== undefined) updates.phone = phone;
     // Normalize specialties for update: accept `specialties` array or single `specialty` string
     if (specialties !== undefined) {
-      if (Array.isArray(specialties)) updates.specialties = specialties.map(s => String(s).trim()).filter(Boolean);
+      if (Array.isArray(specialties)) updates.specialties = Array.from(new Set(specialties.map(s => String(s).trim()).filter(Boolean)));
       else if (typeof specialties === 'string' && specialties.trim() !== '') updates.specialties = [specialties.trim()];
       else updates.specialties = [];
     } else if (specialty !== undefined) {

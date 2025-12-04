@@ -28,6 +28,16 @@ export default function TechniciansPage() {
   const [showEditPassword, setShowEditPassword] = useState(false);
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
 
+  useEffect(() => {
+    if (showEditModal) {
+      const init = Array.isArray(showEditModal.specialties) ? showEditModal.specialties : (showEditModal.specialty ? [showEditModal.specialty] : []);
+      const normalized = Array.from(new Set(init.map((x: any) => String(x || '').trim()).filter(Boolean)));
+      setSelectedSpecialties(normalized);
+    } else {
+      setSelectedSpecialties([]);
+    }
+  }, [showEditModal]);
+
   const fetchTechnicians = async () => {
     try {
       setLoading(true);
@@ -63,7 +73,7 @@ export default function TechniciansPage() {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/services/active`);
         const data = await res.json();
-        const names: string[] = (data?.services || []).map((s: any) => s.name).filter(Boolean);
+        const names: string[] = (data?.services || []).map((s: any) => String(s.name || '').trim()).filter(Boolean);
         setSpecialties(Array.from(new Set(names)));
       } catch (err) {
         console.error('Error fetching specialties from services:', err);
@@ -517,7 +527,7 @@ export default function TechniciansPage() {
                 <svg className="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
               </button>
             </div>
-            <form onSubmit={async (e) => {
+                <form onSubmit={async (e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
               const password = formData.get('password') as string;
@@ -525,7 +535,7 @@ export default function TechniciansPage() {
                 name: formData.get('name'),
                 email: formData.get('email'),
                 phone: formData.get('phone'),
-                specialties: formData.getAll('specialties'),
+                    specialties: selectedSpecialties,
                 status: formData.get('status'),
                 street: formData.get('street'),
                 city: formData.get('city'),
@@ -597,15 +607,22 @@ export default function TechniciansPage() {
                     Specialty * (Select multiple)
                   </label>
                   <div className="w-full max-h-48 overflow-y-auto px-4 py-3 rounded-xl border-2 border-slate-300 bg-white space-y-2">
-                    {(specialties && specialties.length > 0 ? specialties : ['AC Repair', 'Washing Machine', 'Refrigerator', 'TV Repair', 'Microwave', 'Geyser Repair']).map(s => {
-                      const isChecked = (showEditModal?.specialties || (showEditModal?.specialty ? [showEditModal.specialty] : [])).includes(s);
+                    {(specialties && specialties.length > 0 ? specialties : ['AC Repair', 'Washing Machine', 'Refrigerator', 'TV Repair', 'Microwave', 'Geyser Repair']).map((s: string) => {
+                      const checked = selectedSpecialties.includes(s);
                       return (
                         <label key={s} className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition-colors">
                           <input
                             type="checkbox"
                             name="specialties"
                             value={s}
-                            defaultChecked={isChecked}
+                            checked={checked}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedSpecialties(prev => Array.from(new Set([...prev, s])));
+                              } else {
+                                setSelectedSpecialties(prev => prev.filter(x => x !== s));
+                              }
+                            }}
                             className="w-4 h-4 text-slate-900 border-slate-300 rounded focus:ring-2 focus:ring-slate-400"
                           />
                           <span className="text-sm text-slate-900">{s}</span>

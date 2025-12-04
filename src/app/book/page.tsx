@@ -18,7 +18,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import ThankYouPage from "@/components/thankyouPage";
+// Thank you UI replaced by redirect to dashboard on successful booking
 import Toast from "@/components/Toast";
 import LocationPicker from "@/components/LocationPicker";
 
@@ -148,8 +148,8 @@ function BookingForm() {
         return;
       }
 
-      setToast({ message: "Booking successful!", type: "success" });
-      setTimeout(() => setDone(true), 1500);
+      setToast({ message: "Booking successful! Redirecting to dashboard...", type: "success" });
+      setTimeout(() => router.push('/dashboard'), 1500);
     } catch (err) {
       console.error(err);
       setToast({ message: "Something went wrong. Please try again", type: "error" });

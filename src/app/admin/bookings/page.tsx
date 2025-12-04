@@ -1241,7 +1241,7 @@ function AssignTechnicianModal({ booking, technicians, services, onClose, onSucc
                 key={tech._id}
                 onClick={() => !isSubmitting && handleAssign(tech._id)}
                 disabled={isSubmitting}
-                className={`w-full p-4 rounded-xl border-2 transition-all text-left relative ${
+                className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
                   isCurrentlyAssigned
                     ? 'border-purple-500 bg-purple-50'
                     : isRecommended
@@ -1249,17 +1249,6 @@ function AssignTechnicianModal({ booking, technicians, services, onClose, onSucc
                     : 'border-slate-200 hover:border-purple-400 hover:bg-purple-50'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {isRecommended && !isCurrentlyAssigned && (
-                  <div className="absolute top-2 right-2 px-2 py-1 bg-emerald-500 text-white text-xs font-bold rounded-full">
-                    RECOMMENDED
-                  </div>
-                )}
-                {isCurrentlyAssigned && (
-                  <div className="absolute top-2 right-2 px-2 py-1 bg-purple-500 text-white text-xs font-bold rounded-full">
-                    CURRENT
-                  </div>
-                )}
-                
                 <div className="flex items-start gap-4">
                   <div className={`w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 ${
                     isCurrentlyAssigned ? 'bg-purple-200' : isRecommended ? 'bg-emerald-200' : 'bg-slate-200'
@@ -1274,11 +1263,23 @@ function AssignTechnicianModal({ booking, technicians, services, onClose, onSucc
                   
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <p className="font-bold text-slate-900 text-lg">{tech.name}</p>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="font-bold text-slate-900 text-lg">{tech.name}</p>
+                          {isRecommended && !isCurrentlyAssigned && (
+                            <span className="px-2 py-0.5 bg-emerald-500 text-white text-[10px] font-bold rounded-full">
+                              RECOMMENDED
+                            </span>
+                          )}
+                          {isCurrentlyAssigned && (
+                            <span className="px-2 py-0.5 bg-purple-500 text-white text-[10px] font-bold rounded-full">
+                              CURRENT
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-slate-600 font-medium">{techSpecialties.join(', ') || 'N/A'}</p>
                       </div>
-                      <div className="text-right">
+                      <div className="text-right ml-3">
                         <div className="flex items-center gap-1 mb-1">
                           <span className="text-lg font-bold text-slate-900">{rating.toFixed(1)}</span>
                           <svg className="w-5 h-5 text-yellow-500" viewBox="0 0 24 24" fill="currentColor">
