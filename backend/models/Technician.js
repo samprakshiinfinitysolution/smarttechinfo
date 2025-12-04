@@ -14,7 +14,8 @@ const technicianSchema = new mongoose.Schema({
     match: [/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian phone number']
   },
   password: { type: String, required: true },
-  specialty: { type: String, required: true },
+  // Support multiple specialties. Keep empty array by default.
+  specialties: { type: [String], default: [] },
   street: { type: String },
   city: { type: String },
   state: { type: String },

@@ -12,6 +12,7 @@ export default function TechniciansPage() {
   const [specialtyFilter, setSpecialtyFilter] = useState("All");
   const [menuPosition, setMenuPosition] = useState<{x: number, y: number, showAbove: boolean} | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [specialties, setSpecialties] = useState<string[]>([]);
 
   const [showProfileModal, setShowProfileModal] = useState<any>(null);
   const [showEditModal, setShowEditModal] = useState<any>(null);
@@ -25,6 +26,7 @@ export default function TechniciansPage() {
   const itemsPerPage = 10;
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error' | 'warning' | 'info'} | null>(null);
   const [showEditPassword, setShowEditPassword] = useState(false);
+  const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
 
   const fetchTechnicians = async () => {
     try {
@@ -55,6 +57,21 @@ export default function TechniciansPage() {
   useEffect(() => {
     fetchTechnicians();
   }, [currentPage, searchTerm, specialtyFilter]);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/services/active`);
+        const data = await res.json();
+        const names: string[] = (data?.services || []).map((s: any) => s.name).filter(Boolean);
+        setSpecialties(Array.from(new Set(names)));
+      } catch (err) {
+        console.error('Error fetching specialties from services:', err);
+        setSpecialties([]);
+      }
+    };
+    fetchServices();
+  }, []);
 
   const validatePassword = (password: string): boolean => {
     if (password.length < 8) {
@@ -132,13 +149,19 @@ export default function TechniciansPage() {
             onChange={(e) => setSpecialtyFilter(e.target.value)}
             className="px-6 py-3 rounded-xl bg-slate-50 text-slate-700 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300"
           >
-            <option>All Specialties</option>
-            <option>AC Repair</option>
-            <option>Washing Machine</option>
-            <option>Refrigerator</option>
-            <option>TV Repair</option>
-            <option>Microwave</option>
-            <option>Plumbing</option>
+            <option value="All">All Specialties</option>
+            {specialties && specialties.length > 0 ? (
+              specialties.map(s => <option key={s} value={s}>{s}</option>)
+            ) : (
+              <>
+                <option>AC Repair</option>
+                <option>Washing Machine</option>
+                <option>Refrigerator</option>
+                <option>TV Repair</option>
+                <option>Microwave</option>
+                <option>Plumbing</option>
+              </>
+            )}
           </select>
           <button 
             onClick={async () => {
@@ -202,7 +225,7 @@ export default function TechniciansPage() {
                 <tr key={i} className="border-b border-slate-100 hover:bg-slate-50">
                   <td className="px-6 py-4 text-sm font-medium text-slate-900">{tech._id ? String(tech._id).slice(-6) : 'N/A'}</td>
                   <td className="px-6 py-4 text-sm text-slate-900 font-medium">{tech.name}</td>
-                  <td className="px-6 py-4 text-sm text-slate-700">{tech.specialty}</td>
+                  <td className="px-6 py-4 text-sm text-slate-700">{Array.isArray(tech.specialties) ? tech.specialties.join(', ') : (tech.specialty || '')}</td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col gap-1">
                       <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-medium w-fit">
@@ -424,7 +447,7 @@ export default function TechniciansPage() {
                   <p className="text-sm font-medium text-purple-900">Technician Details</p>
                 </div>
                 <p className="text-base font-semibold text-purple-900">{showRemoveModal.name}</p>
-                <p className="text-sm text-purple-700">{showRemoveModal.specialty}</p>
+                <p className="text-sm text-purple-700">{(showRemoveModal?.specialties && showRemoveModal.specialties.length) ? showRemoveModal.specialties.join(', ') : showRemoveModal.specialty}</p>
                 <p className="text-sm text-purple-700">{showRemoveModal.email}</p>
                 <p className="text-sm text-purple-700">{showRemoveModal.phone}</p>
               </div>
@@ -502,7 +525,7 @@ export default function TechniciansPage() {
                 name: formData.get('name'),
                 email: formData.get('email'),
                 phone: formData.get('phone'),
-                specialty: formData.get('specialty'),
+                specialties: formData.getAll('specialties'),
                 status: formData.get('status'),
                 street: formData.get('street'),
                 city: formData.get('city'),
@@ -571,16 +594,25 @@ export default function TechniciansPage() {
                 <div>
                   <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>
-                    Specialty *
+                    Specialty * (Select multiple)
                   </label>
-                  <select name="specialty" defaultValue={showEditModal.specialty} required className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 font-medium">
-                    <option value="AC Repair">AC Repair</option>
-                    <option value="Washing Machine">Washing Machine</option>
-                    <option value="Refrigerator">Refrigerator</option>
-                    <option value="TV Repair">TV Repair</option>
-                    <option value="Microwave">Microwave</option>
-                    <option value="Geyser Repair">Geyser Repair</option>
-                  </select>
+                  <div className="w-full max-h-48 overflow-y-auto px-4 py-3 rounded-xl border-2 border-slate-300 bg-white space-y-2">
+                    {(specialties && specialties.length > 0 ? specialties : ['AC Repair', 'Washing Machine', 'Refrigerator', 'TV Repair', 'Microwave', 'Geyser Repair']).map(s => {
+                      const isChecked = (showEditModal?.specialties || (showEditModal?.specialty ? [showEditModal.specialty] : [])).includes(s);
+                      return (
+                        <label key={s} className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition-colors">
+                          <input
+                            type="checkbox"
+                            name="specialties"
+                            value={s}
+                            defaultChecked={isChecked}
+                            className="w-4 h-4 text-slate-900 border-slate-300 rounded focus:ring-2 focus:ring-slate-400"
+                          />
+                          <span className="text-sm text-slate-900">{s}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
                 </div>
                 <div>
                   <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
@@ -672,7 +704,7 @@ export default function TechniciansPage() {
                 </div>
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-slate-900">{showProfileModal.name}</h3>
-                  <p className="text-sm text-slate-600">{showProfileModal.specialty}</p>
+                  <p className="text-sm text-slate-600">{(showProfileModal?.specialties && showProfileModal.specialties.length) ? showProfileModal.specialties.join(', ') : showProfileModal.specialty}</p>
                 </div>
                 <span className={`px-4 py-2 rounded-full text-sm font-medium ${showProfileModal.status === 'Available' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
                   {showProfileModal.status}
@@ -707,7 +739,7 @@ export default function TechniciansPage() {
                     <svg className="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>
                     <p className="text-xs font-medium text-slate-600">Specialty</p>
                   </div>
-                  <p className="text-sm font-semibold text-slate-900">{showProfileModal.specialty || 'N/A'}</p>
+                  <p className="text-sm font-semibold text-slate-900">{(showProfileModal?.specialties && showProfileModal.specialties.length) ? showProfileModal.specialties.join(', ') : (showProfileModal.specialty || 'N/A')}</p>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-4">
@@ -773,7 +805,7 @@ export default function TechniciansPage() {
                 email: formData.get('email'),
                 phone: formData.get('phone'),
                 password: password,
-                specialty: formData.get('specialty'),
+                specialties: formData.getAll('specialties'),
                 street: formData.get('street'),
                 city: formData.get('city'),
                 state: formData.get('state'),
@@ -843,17 +875,21 @@ export default function TechniciansPage() {
               <div>
                 <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>
-                  Specialty *
+                  Specialty * (Select multiple)
                 </label>
-                <select name="specialty" required className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 font-medium">
-                  <option value="">Choose specialty</option>
-                  <option value="AC Repair">AC Repair</option>
-                  <option value="Washing Machine">Washing Machine</option>
-                  <option value="Refrigerator">Refrigerator</option>
-                  <option value="TV Repair">TV Repair</option>
-                  <option value="Microwave">Microwave</option>
-                  <option value="Geyser Repair">Geyser Repair</option>
-                </select>
+                <div className="w-full max-h-48 overflow-y-auto px-4 py-3 rounded-xl border-2 border-slate-300 bg-white space-y-2">
+                  {(specialties && specialties.length > 0 ? specialties : ['AC Repair', 'Washing Machine', 'Refrigerator', 'TV Repair', 'Microwave', 'Geyser Repair']).map(s => (
+                    <label key={s} className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition-colors">
+                      <input
+                        type="checkbox"
+                        name="specialties"
+                        value={s}
+                        className="w-4 h-4 text-slate-900 border-slate-300 rounded focus:ring-2 focus:ring-slate-400"
+                      />
+                      <span className="text-sm text-slate-900">{s}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -895,7 +931,7 @@ export default function TechniciansPage() {
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
               <div>
                 <h2 className="text-2xl font-bold text-slate-900">Assigned Jobs</h2>
-                <p className="text-sm text-slate-600 mt-1">{showBookingsModal.name} - {showBookingsModal.specialty}</p>
+                <p className="text-sm text-slate-600 mt-1">{showBookingsModal.name} - {(showBookingsModal?.specialties && showBookingsModal.specialties.length) ? showBookingsModal.specialties.join(', ') : showBookingsModal.specialty}</p>
               </div>
               <button onClick={() => setShowBookingsModal(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
                 <svg className="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>

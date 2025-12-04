@@ -40,6 +40,7 @@ export default function BookingsPage() {
   const [showDeleteModal, setShowDeleteModal] = useState<any>(null);
   const [showAssignModal, setShowAssignModal] = useState<any>(null);
   const [technicians, setTechnicians] = useState<any[]>([]);
+  const [services, setServices] = useState<any[]>([]);
   const [toast, setToast] = useState<{message: string, type: 'success' | 'error' | 'warning' | 'info'} | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -61,6 +62,16 @@ export default function BookingsPage() {
         setTechnicians([]);
       }
     };
+    const fetchServices = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/services/active`);
+        const data = await res.json();
+        setServices(data.services || []);
+      } catch (error) {
+        console.error('Error fetching services:', error);
+        setServices([]);
+      }
+    };
     const fetchUsers = async () => {
       try {
         const token = localStorage.getItem("adminToken");
@@ -73,6 +84,7 @@ export default function BookingsPage() {
       }
     };
     fetchTechnicians();
+    fetchServices();
     fetchUsers();
   }, []);
 
@@ -554,7 +566,7 @@ export default function BookingsPage() {
 
       {showEditModal && typeof document !== "undefined" && createPortal(
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
               <h2 className="text-2xl font-bold text-slate-900">Edit Booking</h2>
               <button onClick={() => setShowEditModal(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
@@ -597,77 +609,27 @@ export default function BookingsPage() {
                 setIsSubmitting(false);
               }
             }} className="space-y-5">
+              <EditBookingFields 
+                technicians={technicians} 
+                services={services} 
+                defaultService={showEditModal.service}
+                defaultDate={showEditModal.date}
+                defaultTime={showEditModal.time}
+                defaultAmount={showEditModal.amount}
+                defaultTechId={showEditModal.technician?._id || ''}
+              />
               <div>
                 <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
-                  Select Service *
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+                  Status *
                 </label>
-                <select name="service" defaultValue={showEditModal.service} required className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 font-medium">
-                  <option value="">Choose a service</option>
-                  <option value="AC Repair">AC Repair</option>
-                  <option value="TV Repair">TV Repair</option>
-                  <option value="Geyser Repair">Geyser Repair</option>
-                  <option value="Washing Machine">Washing Machine</option>
-                  <option value="Refrigerator">Refrigerator</option>
-                  <option value="Microwave">Microwave</option>
+                <select name="status" defaultValue={showEditModal.status} required className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 font-medium">
+                  <option value="Pending">Pending</option>
+                  <option value="Scheduled">Scheduled</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
                 </select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-                    Date *
-                  </label>
-                  <input name="date" type="date" defaultValue={showEditModal.date} required className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
-                    Amount (₹) *
-                  </label>
-                  <input name="amount" type="number" defaultValue={showEditModal.amount} required className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400" />
-                </div>
-              </div>
-              <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
-                  Select Time Slot *
-                </label>
-                <select name="time" defaultValue={showEditModal.time} required className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 font-medium">
-                  <option value="">Choose a time slot</option>
-                  <option value="9:00 AM – 11:00 AM">9:00 AM – 11:00 AM</option>
-                  <option value="11:00 AM – 1:00 PM">11:00 AM – 1:00 PM</option>
-                  <option value="1:00 PM – 3:00 PM">1:00 PM – 3:00 PM</option>
-                  <option value="3:00 PM – 5:00 PM">3:00 PM – 5:00 PM</option>
-                  <option value="5:00 PM – 7:00 PM">5:00 PM – 7:00 PM</option>
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
-                    Status *
-                  </label>
-                  <select name="status" defaultValue={showEditModal.status} required className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 font-medium">
-                    <option value="Pending">Pending</option>
-                    <option value="Scheduled">Scheduled</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Cancelled">Cancelled</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
-                    Technician
-                  </label>
-                  <select name="technician" defaultValue={showEditModal.technician?._id || ''} className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 font-medium">
-                    <option value="">Unassigned</option>
-                    {technicians.map(tech => (
-                      <option key={tech._id} value={tech._id}>{tech.name} - {tech.specialty}</option>
-                    ))}
-                  </select>
-                </div>
               </div>
               <div className="flex gap-3 pt-4">
                 <button type="button" onClick={() => setShowEditModal(null)} className="flex-1 px-4 py-3 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium transition-colors" disabled={isSubmitting}>
@@ -723,7 +685,7 @@ export default function BookingsPage() {
                     <p className="text-sm font-medium text-purple-900">Technician</p>
                   </div>
                   <p className="text-base font-semibold text-purple-900">{showDetailsModal.technician?.name || 'Unassigned'}</p>
-                  <p className="text-sm text-purple-700 mt-1">{showDetailsModal.technician?.specialty || 'N/A'}</p>
+                  <p className="text-sm text-purple-700 mt-1">{(showDetailsModal.technician?.specialties && showDetailsModal.technician.specialties.length) ? showDetailsModal.technician.specialties.join(', ') : 'N/A'}</p>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-4">
@@ -783,6 +745,7 @@ export default function BookingsPage() {
         <AddBookingModal
           users={users}
           technicians={technicians}
+          services={services}
           onClose={() => setShowAddModal(false)}
           onSuccess={async () => {
             const token = localStorage.getItem("adminToken");
@@ -886,7 +849,7 @@ export default function BookingsPage() {
   );
 }
 
-function AddBookingModal({ users, technicians, onClose, onSuccess }: { users: any[]; technicians: any[]; onClose: () => void; onSuccess: () => void }) {
+function AddBookingModal({ users, technicians, services, onClose, onSuccess }: { users: any[]; technicians: any[]; services: any[]; onClose: () => void; onSuccess: () => void }) {
   const [step, setStep] = useState<'select' | 'existing' | 'new'>('select');
   const [selectedUser, setSelectedUser] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -1022,7 +985,7 @@ function AddBookingModal({ users, technicians, onClose, onSuccess }: { users: an
                 ))}
               </div>
             </div>
-            <BookingFields technicians={technicians} />
+            <BookingFields technicians={technicians} services={services} />
             <div className="flex gap-3 pt-4">
               <button type="button" onClick={() => setStep('select')} className="flex-1 px-4 py-3 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium transition-colors">
                 Back
@@ -1064,7 +1027,7 @@ function AddBookingModal({ users, technicians, onClose, onSuccess }: { users: an
                 <textarea name="userAddress" rows={2} className="w-full px-4 py-2.5 rounded-xl border-2 border-emerald-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-none" placeholder="Full address" />
               </div>
             </div>
-            <BookingFields technicians={technicians} />
+            <BookingFields technicians={technicians} services={services} />
             <div className="flex gap-3 pt-4">
               <button type="button" onClick={() => setStep('select')} className="flex-1 px-4 py-3 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium transition-colors">
                 Back
@@ -1110,11 +1073,12 @@ function AssignTechnicianModal({ booking, technicians, onClose, onSuccess, onErr
 
   // Filter technicians
   const filteredTechnicians = technicians.filter(tech => {
+    const techSpecialties = Array.isArray(tech.specialties) ? tech.specialties : (tech.specialty ? [tech.specialty] : []);
     const matchesSearch = searchTerm === '' ||
       tech.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tech.specialty.toLowerCase().includes(searchTerm.toLowerCase());
+      techSpecialties.some((s: string) => s.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const matchesSpecialty = specialtyFilter === 'All' || tech.specialty === specialtyFilter;
+    const matchesSpecialty = specialtyFilter === 'All' || techSpecialties.includes(specialtyFilter);
     const matchesAvailability = availabilityFilter === 'All' || tech.status === availabilityFilter;
     
     return matchesSearch && matchesSpecialty && matchesAvailability;
@@ -1122,8 +1086,10 @@ function AssignTechnicianModal({ booking, technicians, onClose, onSuccess, onErr
 
   // Sort: recommended first, then by rating
   const sortedTechnicians = [...filteredTechnicians].sort((a, b) => {
-    const aRecommended = recommendedSpecialties.includes(a.specialty);
-    const bRecommended = recommendedSpecialties.includes(b.specialty);
+    const aSpecialties = (a.specialties && a.specialties.length) ? a.specialties : [];
+    const bSpecialties = (b.specialties && b.specialties.length) ? b.specialties : [];
+    const aRecommended = aSpecialties.some((s: string) => recommendedSpecialties.includes(s));
+    const bRecommended = bSpecialties.some((s: string) => recommendedSpecialties.includes(s));
     if (aRecommended && !bRecommended) return -1;
     if (!aRecommended && bRecommended) return 1;
     return (b.avgRating || b.rating || 0) - (a.avgRating || a.rating || 0);
@@ -1154,7 +1120,7 @@ function AssignTechnicianModal({ booking, technicians, onClose, onSuccess, onErr
     }
   };
 
-  const uniqueSpecialties = Array.from(new Set(technicians.map(t => t.specialty)));
+  const uniqueSpecialties = Array.from(new Set(technicians.flatMap(t => (t.specialties && t.specialties.length) ? t.specialties : [])));
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -1244,7 +1210,8 @@ function AssignTechnicianModal({ booking, technicians, onClose, onSuccess, onErr
           </p>
           
           {sortedTechnicians.map((tech) => {
-            const isRecommended = recommendedSpecialties.includes(tech.specialty);
+            const techSpecialties = Array.isArray(tech.specialties) ? tech.specialties : (tech.specialty ? [tech.specialty] : []);
+            const isRecommended = techSpecialties.some((s: string) => recommendedSpecialties.includes(s));
             const isCurrentlyAssigned = booking.technician?._id === tech._id;
             const rating = tech.avgRating || tech.rating || 0;
             const totalJobs = tech.totalJobs || tech.services || 0;
@@ -1290,7 +1257,7 @@ function AssignTechnicianModal({ booking, technicians, onClose, onSuccess, onErr
                     <div className="flex items-start justify-between mb-2">
                       <div>
                         <p className="font-bold text-slate-900 text-lg">{tech.name}</p>
-                        <p className="text-sm text-slate-600 font-medium">{tech.specialty}</p>
+                        <p className="text-sm text-slate-600 font-medium">{techSpecialties.join(', ') || 'N/A'}</p>
                       </div>
                       <div className="text-right">
                         <div className="flex items-center gap-1 mb-1">
@@ -1345,7 +1312,194 @@ function AssignTechnicianModal({ booking, technicians, onClose, onSuccess, onErr
   );
 }
 
-function BookingFields({ technicians }: { technicians: any[] }) {
+function EditBookingFields({ technicians, services, defaultService, defaultTechId, defaultDate, defaultTime, defaultAmount }: { technicians: any[]; services: any[]; defaultService?: string; defaultTechId?: string; defaultDate?: string; defaultTime?: string; defaultAmount?: number | string }) {
+  const [selectedService, setSelectedService] = React.useState(defaultService || '');
+  const [selectedTechId, setSelectedTechId] = React.useState(defaultTechId || '');
+
+  const selectedServiceObj = services.find(s => s._id === selectedService);
+  
+  const filteredTechnicians = React.useMemo(() => {
+    if (!selectedService || !selectedServiceObj) return technicians;
+    
+    return technicians.filter(tech => {
+      const techSpecialties = Array.isArray(tech.specialties) ? tech.specialties : (tech.specialty ? [tech.specialty] : []);
+      return techSpecialties.some((s: string) => 
+        selectedServiceObj.name.toLowerCase().includes(s.toLowerCase()) ||
+        s.toLowerCase().includes(selectedServiceObj.name.toLowerCase())
+      );
+    }).sort((a, b) => {
+      if (a.status === 'Available' && b.status !== 'Available') return -1;
+      if (a.status !== 'Available' && b.status === 'Available') return 1;
+      return (b.avgRating || b.rating || 0) - (a.avgRating || a.rating || 0);
+    });
+  }, [selectedService, selectedServiceObj, technicians]);
+
+  return (
+    <>
+      <div>
+        <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+          Select Service *
+        </label>
+        <select 
+          name="service" 
+          value={selectedService} 
+          onChange={(e) => {
+            setSelectedService(e.target.value);
+            setSelectedTechId('');
+          }}
+          required 
+          className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 font-medium"
+        >
+          <option value="">Choose a service</option>
+          {services.map(s => (
+            <option key={s._id} value={s._id}>{s.name}</option>
+          ))}
+        </select>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+            Date *
+          </label>
+          <input name="date" type="date" defaultValue={defaultDate || ''} required className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400" />
+        </div>
+        <div>
+          <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+            Amount (₹) *
+          </label>
+          <input name="amount" type="number" defaultValue={defaultAmount ?? 0} required className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400" />
+        </div>
+      </div>
+      <div>
+        <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+          Select Time Slot *
+        </label>
+        <select name="time" defaultValue={defaultTime || ''} required className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 font-medium">
+          <option value="">Choose a time slot</option>
+          <option value="9:00 AM – 11:00 AM">9:00 AM – 11:00 AM</option>
+          <option value="11:00 AM – 1:00 PM">11:00 AM – 1:00 PM</option>
+          <option value="1:00 PM – 3:00 PM">1:00 PM – 3:00 PM</option>
+          <option value="3:00 PM – 5:00 PM">3:00 PM – 5:00 PM</option>
+          <option value="5:00 PM – 7:00 PM">5:00 PM – 7:00 PM</option>
+        </select>
+      </div>
+
+      {selectedService && filteredTechnicians.length > 0 && (
+        <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-4 rounded-xl border border-purple-200">
+          <input type="hidden" name="technician" value={selectedTechId} />
+          <h3 className="font-semibold text-purple-900 mb-3 text-sm">Select Technician ({filteredTechnicians.length} available)</h3>
+          <div className="space-y-2 max-h-60 overflow-y-auto">
+            <button
+              type="button"
+              onClick={() => setSelectedTechId('')}
+              className={`w-full p-3 rounded-lg border-2 transition-all text-left ${
+                selectedTechId === '' ? 'border-purple-500 bg-purple-100' : 'border-purple-200 bg-white hover:border-purple-300 hover:bg-purple-50'
+              }`}
+            >
+              <p className="font-medium text-purple-900">✕ Leave Unassigned</p>
+              <p className="text-xs text-purple-600">Assign technician later</p>
+            </button>
+                {filteredTechnicians.map(tech => {
+                const specialties = Array.isArray(tech.specialties) ? tech.specialties : (tech.specialty ? [tech.specialty] : []);
+              const rating = tech.avgRating || tech.rating || 0;
+              const isSelected = tech._id === selectedTechId;
+              const isAvailable = tech.status === 'Available';
+              
+              return (
+                <button
+                  key={tech._id}
+                  type="button"
+                  onClick={() => setSelectedTechId(tech._id)}
+                  className={`w-full p-3 rounded-lg border-2 transition-all text-left ${
+                    isSelected ? 'border-blue-500 bg-blue-100 shadow-md' : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-base font-bold ${
+                      isAvailable ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                    }`}>
+                      {tech.name.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-bold text-slate-900">{tech.name}</span>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                          isAvailable ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'
+                        }`}>
+                          {tech.status}
+                        </span>
+                        <div className="flex items-center gap-0.5 ml-auto">
+                          <svg className="w-3 h-3 text-yellow-500" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                          </svg>
+                          <span className="text-xs font-bold text-slate-900">{rating.toFixed(1)}</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {specialties.slice(0, 2).map((s: string, i: number) => (
+                          <span key={i} className="px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] font-medium">
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+function BookingFields({ technicians, services }: { technicians: any[]; services: any[] }) {
+  const [selectedService, setSelectedService] = React.useState('');
+  const [selectedTechId, setSelectedTechId] = React.useState('');
+
+  const selectedServiceObj = services.find(s => s._id === selectedService);
+  
+  // Filter technicians based on selected service
+  const filteredTechnicians = React.useMemo(() => {
+    if (!selectedService || !selectedServiceObj) return [];
+    
+    return technicians.filter(tech => {
+      const techSpecialties = Array.isArray(tech.specialties) ? tech.specialties : (tech.specialty ? [tech.specialty] : []);
+      return techSpecialties.some((s: string) => 
+        selectedServiceObj.name.toLowerCase().includes(s.toLowerCase()) ||
+        s.toLowerCase().includes(selectedServiceObj.name.toLowerCase())
+      );
+    }).sort((a, b) => {
+      // Sort: Available first, then by rating
+      if (a.status === 'Available' && b.status !== 'Available') return -1;
+      if (a.status !== 'Available' && b.status === 'Available') return 1;
+      return (b.avgRating || b.rating || 0) - (a.avgRating || a.rating || 0);
+    });
+  }, [selectedService, selectedServiceObj, technicians]);
+
+  React.useEffect(() => {
+    const handler = (e: Event) => {
+      const target = e.target as HTMLSelectElement;
+      if (!target || target.name !== 'service') return;
+      const form = target.closest('form');
+      if (!form) return;
+      const selected = target.options[target.selectedIndex];
+      const price = selected?.getAttribute('data-price') || '';
+      const amountInput = form.querySelector('input[name="amount"]') as HTMLInputElement | null;
+      if (amountInput && price) {
+        amountInput.value = price;
+      }
+    };
+
+    document.addEventListener('change', handler);
+    return () => document.removeEventListener('change', handler);
+  }, []);
+
   return (
     <div className="space-y-4">
       <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
@@ -1356,14 +1510,20 @@ function BookingFields({ technicians }: { technicians: any[] }) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="text-sm font-medium text-blue-900 mb-1 block">Service *</label>
-            <select name="service" required className="w-full px-4 py-2.5 rounded-xl border-2 border-blue-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400 font-medium">
+            <select 
+              name="service" 
+              required 
+              value={selectedService}
+              onChange={(e) => {
+                setSelectedService(e.target.value);
+                setSelectedTechId(''); // Reset technician when service changes
+              }}
+              className="w-full px-4 py-2.5 rounded-xl border-2 border-blue-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400 font-medium"
+            >
               <option value="">Choose service</option>
-              <option value="AC Repair">AC Repair</option>
-              <option value="TV Repair">TV Repair</option>
-              <option value="Geyser Repair">Geyser Repair</option>
-              <option value="Washing Machine">Washing Machine</option>
-              <option value="Refrigerator">Refrigerator</option>
-              <option value="Microwave">Microwave</option>
+              {services.map(s => (
+                <option key={s._id} value={s._id} data-price={s.serviceCharges}>{s.name}</option>
+              ))}
             </select>
           </div>
           <div>
@@ -1386,16 +1546,101 @@ function BookingFields({ technicians }: { technicians: any[] }) {
             </select>
           </div>
         </div>
-        <div className="mt-3">
-          <label className="text-sm font-medium text-blue-900 mb-1 block">Assign Technician (Optional)</label>
-          <select name="technician" className="w-full px-4 py-2.5 rounded-xl border-2 border-blue-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400 font-medium">
-            <option value="">Unassigned</option>
-            {technicians.map(tech => (
-              <option key={tech._id} value={tech._id}>{tech.name} - {tech.specialty}</option>
-            ))}
-          </select>
-        </div>
       </div>
+
+      {/* Technician Selection */}
+      {selectedService && (
+        <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-4 rounded-xl border border-purple-200">
+          <input type="hidden" name="technician" value={selectedTechId} />
+          <h3 className="font-semibold text-purple-900 mb-3 flex items-center gap-2">
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            Select Technician for {selectedServiceObj?.name}
+            <span className="ml-auto text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded-full">
+              {filteredTechnicians.length} available
+            </span>
+          </h3>
+          
+          {filteredTechnicians.length === 0 ? (
+            <div className="text-center py-8 bg-white rounded-lg border-2 border-dashed border-purple-200">
+              <svg className="w-12 h-12 text-purple-300 mx-auto mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              <p className="text-purple-700 font-medium">No technicians found for this service</p>
+              <p className="text-xs text-purple-600 mt-1">Try selecting a different service</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => setSelectedTechId('')}
+                className={`w-full p-3 rounded-lg border-2 transition-all text-left ${
+                  selectedTechId === ''
+                    ? 'border-purple-500 bg-purple-100'
+                    : 'border-purple-200 bg-white hover:border-purple-300 hover:bg-purple-50'
+                }`}
+              >
+                <p className="font-medium text-purple-900">✕ Leave Unassigned</p>
+                <p className="text-xs text-purple-600">Assign technician later</p>
+              </button>
+              
+              {filteredTechnicians.map(tech => {
+                const specialties = Array.isArray(tech.specialties) ? tech.specialties : (tech.specialty ? [tech.specialty] : []);
+                const rating = tech.avgRating || tech.rating || 0;
+                const isSelected = tech._id === selectedTechId;
+                const isAvailable = tech.status === 'Available';
+                
+                return (
+                  <button
+                    key={tech._id}
+                    type="button"
+                    onClick={() => setSelectedTechId(tech._id)}
+                    className={`w-full p-3 rounded-lg border-2 transition-all text-left ${
+                      isSelected
+                        ? 'border-blue-500 bg-blue-100 shadow-md'
+                        : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-lg font-bold ${
+                        isAvailable ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                      }`}>
+                        {tech.name.charAt(0)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-bold text-slate-900">{tech.name}</h4>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            isAvailable ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'
+                          }`}>
+                            {tech.status || 'Available'}
+                          </span>
+                          <div className="flex items-center gap-0.5 ml-auto">
+                            <svg className="w-3 h-3 text-yellow-500" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                            </svg>
+                            <span className="text-xs font-bold text-slate-900">{rating.toFixed(1)}</span>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {specialties.map((s: string, i: number) => (
+                            <span key={i} className="px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] font-medium">
+                              {s}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

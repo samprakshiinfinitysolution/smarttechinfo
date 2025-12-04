@@ -40,6 +40,8 @@ function BookingForm() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [phoneError, setPhoneError] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [fullNameError, setFullNameError] = useState("");
+  const [addressError, setAddressError] = useState("");
   const [services, setServices] = useState<any[]>([]);
   const [serviceCharges, setServiceCharges] = useState<Record<string, number>>({});
   const [locationCoords, setLocationCoords] = useState<{ lat: number; lng: number } | null>(null);
@@ -237,6 +239,7 @@ function BookingForm() {
                       placeholder="Enter your full name"
                       className="w-full border-2 border-slate-400 rounded-xl px-4 py-3 bg-white text-slate-900 focus:border-blue-500 focus:outline-none transition-colors"
                     />
+                    {fullNameError && <p className="text-red-600 text-sm mt-1">{fullNameError}</p>}
                   </div>
 
                   <div>
@@ -294,10 +297,47 @@ function BookingForm() {
                     setAddress={setAddress}
                     onLocationSelect={(lat, lng) => setLocationCoords({ lat, lng })}
                   />
+                  {addressError && <p className="text-red-600 text-sm mt-1">{addressError}</p>}
 
                   <div className="flex justify-end pt-4">
                     <button
-                      onClick={() => setStep(2)}
+                      onClick={() => {
+                        // validate required fields on step 1 before continuing
+                        let ok = true;
+                        if (!fullName || fullName.trim() === '') {
+                          setFullNameError('Full name is required');
+                          ok = false;
+                        } else {
+                          setFullNameError('');
+                        }
+
+                        if (!phone || phone.trim() === '') {
+                          setPhoneError('Phone number is required');
+                          ok = false;
+                        } else if (!/^[6-9]\d{9}$/.test(phone)) {
+                          setPhoneError('Enter valid 10-digit number starting with 6-9');
+                          ok = false;
+                        } else {
+                          setPhoneError('');
+                        }
+
+                        if (!address || address.trim() === '') {
+                          setAddressError('Address is required');
+                          ok = false;
+                        } else {
+                          setAddressError('');
+                        }
+
+                        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                          setEmailError('Enter a valid email address');
+                          ok = false;
+                        } else {
+                          // leave emailError as-is only if previously set
+                          if (!email) setEmailError('');
+                        }
+
+                        if (ok) setStep(2);
+                      }}
                       className="bg-gradient-to-r from-[#0C1B33] to-[#1e3a5f] text-white px-8 py-3 rounded-xl font-semibold flex items-center gap-2 hover:shadow-lg transition-all"
                     >
                       Continue

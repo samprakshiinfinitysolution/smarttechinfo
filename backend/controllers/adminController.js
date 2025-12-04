@@ -109,7 +109,7 @@ exports.getAllBookings = async (req, res) => {
     
     let bookings = await Booking.find(query)
       .populate('customer', 'name email phone')
-      .populate('technician', 'name specialty')
+      .populate('technician', 'name specialties')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));
@@ -215,11 +215,13 @@ exports.getAllTechnicians = async (req, res) => {
     if (search) {
       matchStage.$or = [
         { name: { $regex: search, $options: 'i' } },
-        { specialty: { $regex: search, $options: 'i' } }
+        // search inside specialties array (match any element)
+        { specialties: { $in: [ new RegExp(search, 'i') ] } }
       ];
     }
     if (specialty && specialty !== 'All' && specialty !== 'All Specialties') {
-      matchStage.specialty = specialty;
+      // filter technicians who have this specialty in their specialties array
+      matchStage.specialties = specialty;
     }
     
     const technicians = await Technician.aggregate([
@@ -390,7 +392,7 @@ exports.updateBooking = async (req, res) => {
 
     const booking = await Booking.findByIdAndUpdate(id, updates, { new: true })
       .populate('customer', 'name email phone')
-      .populate('technician', 'name specialty');
+      .populate('technician', 'name specialties');
     res.json(booking);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -490,12 +492,17 @@ exports.deleteUser = async (req, res) => {
 
 exports.createTechnician = async (req, res) => {
   try {
-    const { name, email, phone, password, specialty, street, city, state, pincode } = req.body;
+    const { name, email, phone, password, specialty, specialties, street, city, state, pincode } = req.body;
     const bcrypt = require('bcryptjs');
     // If password not provided by admin, generate a random temporary password
     const tempPassword = password || Math.random().toString(36).slice(-8);
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
-    const technician = new Technician({ name, email, phone, password: hashedPassword, specialty, street, city, state, pincode });
+    // Normalize specialties: accept `specialties` array or single `specialty` string
+    let normalizedSpecialties = [];
+    if (Array.isArray(specialties) && specialties.length > 0) normalizedSpecialties = specialties.map(s => String(s).trim()).filter(Boolean);
+    else if (typeof specialty === 'string' && specialty.trim() !== '') normalizedSpecialties = [specialty.trim()];
+
+    const technician = new Technician({ name, email, phone, password: hashedPassword, specialties: normalizedSpecialties, street, city, state, pincode });
     await technician.save();
     const response = { ...technician.toObject(), password: undefined };
     // Return temporary password so admin can communicate it securely to technician
@@ -508,12 +515,20 @@ exports.createTechnician = async (req, res) => {
 exports.updateTechnician = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, phone, specialty, status, street, city, state, pincode, password } = req.body;
+    const { name, email, phone, specialty, specialties, status, street, city, state, pincode, password } = req.body;
     const updates = {};
     if (name !== undefined) updates.name = name;
     if (email !== undefined) updates.email = email;
     if (phone !== undefined) updates.phone = phone;
-    if (specialty !== undefined) updates.specialty = specialty;
+    // Normalize specialties for update: accept `specialties` array or single `specialty` string
+    if (specialties !== undefined) {
+      if (Array.isArray(specialties)) updates.specialties = specialties.map(s => String(s).trim()).filter(Boolean);
+      else if (typeof specialties === 'string' && specialties.trim() !== '') updates.specialties = [specialties.trim()];
+      else updates.specialties = [];
+    } else if (specialty !== undefined) {
+      if (typeof specialty === 'string' && specialty.trim() !== '') updates.specialties = [specialty.trim()];
+      else updates.specialties = [];
+    }
     if (status !== undefined) updates.status = status;
     if (street !== undefined) updates.street = street;
     if (city !== undefined) updates.city = city;
@@ -622,7 +637,7 @@ exports.exportTechnicians = async (req, res) => {
       Name: t.name,
       Email: t.email,
       Phone: t.phone,
-      Specialty: t.specialty,
+      Specialty: (t.specialties && t.specialties.length) ? t.specialties.join(', ') : t.specialty,
       Rating: t.rating,
       Services: t.services,
       Status: t.status,
