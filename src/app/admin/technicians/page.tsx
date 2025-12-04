@@ -31,7 +31,7 @@ export default function TechniciansPage() {
   useEffect(() => {
     if (showEditModal) {
       const init = Array.isArray(showEditModal.specialties) ? showEditModal.specialties : (showEditModal.specialty ? [showEditModal.specialty] : []);
-      const normalized = Array.from(new Set(init.map((x: any) => String(x || '').trim()).filter(Boolean)));
+      const normalized: string[] = Array.from(new Set(init.map((x: any) => String(x || '').trim()).filter(Boolean)));
       setSelectedSpecialties(normalized);
     } else {
       setSelectedSpecialties([]);

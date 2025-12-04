@@ -35,7 +35,7 @@ function BookingForm() {
   const [timeSlot, setTimeSlot] = useState("");
   const [issue, setIssue] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cash");
-  const [done, setDone] = useState(false);
+  // booking completion handled by redirect; no local 'done' state needed
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "warning" } | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [phoneError, setPhoneError] = useState("");
@@ -156,7 +156,6 @@ function BookingForm() {
     }
   };
 
-  if (done) return <ThankYouPage />;
   if (!isAuthenticated) return null;
 
   const serviceCharge = service ? serviceCharges[service] : 0;
