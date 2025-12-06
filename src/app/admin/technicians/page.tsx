@@ -15,6 +15,7 @@ export default function TechniciansPage() {
   const [specialties, setSpecialties] = useState<string[]>([]);
 
   const [showProfileModal, setShowProfileModal] = useState<any>(null);
+  const [showProfileLoading, setShowProfileLoading] = useState(false);
   const [showEditModal, setShowEditModal] = useState<any>(null);
   const [showRemoveModal, setShowRemoveModal] = useState<any>(null);
   const [showBookingsModal, setShowBookingsModal] = useState<any>(null);
@@ -135,7 +136,7 @@ export default function TechniciansPage() {
         </div>
         <div className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm hover:shadow-md transition-all group">
           <div className="text-sm text-slate-500">Avg Rating</div>
-          <div className="text-2xl font-bold text-slate-900 mt-2">{safeTechnicians.length > 0 ? (safeTechnicians.reduce((acc, t) => acc + (t.rating || 0), 0) / safeTechnicians.length).toFixed(1) : '0.0'} ⭐</div>
+          <div className="text-2xl font-bold text-slate-900 mt-2">{safeTechnicians.length > 0 ? (safeTechnicians.reduce((acc, t) => acc + (t.avgRating || 0), 0) / safeTechnicians.length).toFixed(1) : '0.0'} ⭐</div>
         </div>
       </div>
 
@@ -239,7 +240,7 @@ export default function TechniciansPage() {
                   <td className="px-6 py-4">
                     <div className="flex flex-col gap-1">
                       <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-medium w-fit">
-                        <span>{tech.avgRating ? tech.avgRating.toFixed(1) : tech.rating || 0}</span>
+                        <span>{tech.avgRating ? tech.avgRating.toFixed(1) : '0.0'}</span>
                         <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
                           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                         </svg>
@@ -348,9 +349,31 @@ export default function TechniciansPage() {
             }}
           >
             <button 
-              onClick={() => {
+              onClick={async () => {
                 const tech = safeTechnicians.find(t => t._id === openMenuId);
-                if (tech) setShowProfileModal(tech);
+                setShowProfileLoading(true);
+                try {
+                  const token = localStorage.getItem('adminToken');
+                  if (token && tech) {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/admin/technicians/${tech._id}/profile`, {
+                      headers: { Authorization: `Bearer ${token}` }
+                    });
+                    if (res.ok) {
+                      const data = await res.json();
+                      setShowProfileModal(data.technician || tech);
+                    } else {
+                      setShowProfileModal(tech);
+                    }
+                  } else if (tech) {
+                    setShowProfileModal(tech);
+                  }
+                } catch (err) {
+                  console.error('Failed to fetch technician profile:', err);
+                  if (tech) setShowProfileModal(tech);
+                } finally {
+                  setShowProfileLoading(false);
+                }
+
                 setOpenMenuId(null);
                 setMenuPosition(null);
               }}
@@ -759,22 +782,29 @@ export default function TechniciansPage() {
                   <p className="text-sm font-semibold text-slate-900">{(showProfileModal?.specialties && showProfileModal.specialties.length) ? showProfileModal.specialties.join(', ') : (showProfileModal.specialty || 'N/A')}</p>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-5 gap-4">
                 <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-200">
                   <div className="flex items-center gap-2 mb-2">
                     <svg className="w-5 h-5 text-yellow-600" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                     </svg>
-                    <p className="text-xs font-medium text-yellow-900">Rating</p>
+                    <p className="text-xs font-medium text-yellow-900">Avg Rating</p>
                   </div>
-                  <p className="text-2xl font-bold text-yellow-900">{showProfileModal.rating || 0}</p>
+                  <p className="text-2xl font-bold text-yellow-900">{showProfileModal?.avgRating ? showProfileModal.avgRating.toFixed(1) : '0.0'}</p>
                 </div>
                 <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
                   <div className="flex items-center gap-2 mb-2">
                     <svg className="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
-                    <p className="text-xs font-medium text-blue-900">Services</p>
+                    <p className="text-xs font-medium text-blue-900">Total Jobs</p>
                   </div>
-                  <p className="text-2xl font-bold text-blue-900">{showProfileModal.services || 0}</p>
+                  <p className="text-2xl font-bold text-blue-900">{(showProfileModal && (showProfileModal.totalJobs !== undefined ? showProfileModal.totalJobs : showProfileModal.services)) || 0}</p>
+                </div>
+                <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <svg className="w-5 h-5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5v14" /></svg>
+                    <p className="text-xs font-medium text-indigo-900">Completed Jobs</p>
+                  </div>
+                  <p className="text-2xl font-bold text-indigo-900">{(showProfileModal && (showProfileModal.completedJobs !== undefined ? showProfileModal.completedJobs : 0))}</p>
                 </div>
                 <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-200">
                   <div className="flex items-center gap-2 mb-2">
@@ -782,6 +812,13 @@ export default function TechniciansPage() {
                     <p className="text-xs font-medium text-emerald-900">Status</p>
                   </div>
                   <p className="text-sm font-bold text-emerald-900">{showProfileModal.status}</p>
+                </div>
+                <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <svg className="w-5 h-5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3h18v18H3z" /></svg>
+                    <p className="text-xs font-medium text-amber-900">Pending / Today</p>
+                  </div>
+                  <p className="text-2xl font-bold text-amber-900">{(showProfileModal && (showProfileModal.pendingJobs !== undefined ? showProfileModal.pendingJobs : 0))} / {(showProfileModal && (showProfileModal.todayJobs !== undefined ? showProfileModal.todayJobs : 0))}</p>
                 </div>
               </div>
               {showProfileModal.createdAt && (

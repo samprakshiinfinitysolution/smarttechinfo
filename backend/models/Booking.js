@@ -12,9 +12,11 @@ const bookingSchema = new mongoose.Schema({
   longitude: { type: Number },
   status: { 
     type: String, 
-    enum: ['Pending', 'Scheduled', 'In Progress', 'Completed', 'Cancelled'], 
+    enum: ['Pending', 'Scheduled', 'Accepted', 'In Progress', 'Completed', 'Cancelled'], 
     default: 'Pending' 
   },
+  rating: { type: Number, min: 1, max: 5 },
+  review: { type: String },
   createdAt: { type: Date, default: Date.now }
 });
 

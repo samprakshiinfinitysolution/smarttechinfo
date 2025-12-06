@@ -5,6 +5,8 @@ import { Phone, Menu, X, User, LogOut, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
+import NotificationPanel from "./NotificationPanel";
+import { useNotifications } from "../contexts/NotificationContext";
 
 export default function Navbar({
   onDashboardClick,
@@ -12,11 +14,13 @@ export default function Navbar({
   onDashboardClick: () => void;
 }) {
   const router = useRouter();
+  const { fetchNotifications } = useNotifications();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const navbarRef = useRef<HTMLDivElement>(null);
@@ -39,42 +43,12 @@ export default function Navbar({
         setIsLoggedIn(false);
         setUserName("");
       }
+      setLoading(false);
     };
     checkAuth();
   }, []);
 
-  // GSAP Animations
-  useEffect(() => {
-    if (!mounted) return;
-    if (!navbarRef.current) return;
 
-    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-    tl.from(navbarRef.current, { opacity: 0, y: -20, duration: 0.7 });
-
-    if (logoRef.current) {
-      tl.from(logoRef.current, { opacity: 0, x: -30, duration: 0.6 });
-    }
-
-    if (menuItemsRef.current.length) {
-      gsap.from(menuItemsRef.current, {
-        opacity: 0,
-        y: 15,
-        duration: 0.6,
-        stagger: 0.15,
-        ease: "power2.out",
-      });
-    }
-
-    if (phoneRef.current && bookRef.current) {
-      gsap.from([phoneRef.current, bookRef.current], {
-        opacity: 0,
-        scale: 0.9,
-        duration: 0.6,
-        stagger: 0.2,
-        ease: "back.out(1.6)",
-      });
-    }
-  }, [mounted]);
 
   // Mobile Menu Animation
   useEffect(() => {
@@ -138,15 +112,15 @@ export default function Navbar({
   };
 
   return (
-    <nav ref={navbarRef} className="w-full bg-white text-black shadow-sm sticky top-0 z-50">
+    <nav ref={navbarRef} className="w-full bg-white/95 backdrop-blur-lg text-black shadow-sm sticky top-0 z-50 border-b border-gray-100">
       <div className="max-w-7xl mx-auto h-16 flex items-center justify-between px-6">
 
         {/* Logo */}
-        <Link href="/">
+        <Link href="/" className="flex items-center">
           <img
             ref={logoRef}
             src="/LOGO1.png"
-            className="w-14 h-14"
+            className="w-14 h-14 object-contain"
             alt="Logo"
           />
         </Link>
@@ -213,8 +187,16 @@ export default function Navbar({
             Book Now
           </button>
 
+          {/* Notifications */}
+          {isLoggedIn && <NotificationPanel />}
+
           {/* User Menu */}
-          {isLoggedIn && (
+          {loading ? (
+            <div className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-lg animate-pulse">
+              <div className="w-8 h-8 rounded-full bg-gray-300"></div>
+              <div className="w-20 h-4 bg-gray-300 rounded"></div>
+            </div>
+          ) : isLoggedIn && (
             <div className="relative">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
@@ -262,12 +244,12 @@ export default function Navbar({
 
         {/* Mobile Menu Button */}
         <button 
-          className="md:hidden" 
+          className="md:hidden p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors" 
           onClick={() => setOpen(!open)}
           aria-label="Toggle mobile menu"
           aria-expanded={open}
         >
-          {open ? <X size={28} /> : <Menu size={28} />}
+          {open ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
 
@@ -275,42 +257,62 @@ export default function Navbar({
       {mounted && (
         <div
           ref={mobileMenuRef}
-          className={`md:hidden transition-all overflow-hidden ${
-            open ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
-          } bg-white border-t`}
+          className={`md:hidden transition-all duration-300 overflow-hidden ${
+            open ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
+          } bg-white border-t shadow-lg`}
         >
-          <ul className="flex flex-col gap-5 py-5 px-6 text-gray-700 font-medium">
-            <li>
-              <Link href="/">Home</Link>
-            </li>
-
-            <li className="hover:text-blue-700 cursor-pointer">
-              <Link href="/services">Services</Link>
-            </li>
-
-            {!isLoggedIn ? (
-              <li onClick={onDashboardClick} className="hover:text-blue-700 cursor-pointer">
-                Login
-              </li>
-            ) : (
-              <li onClick={() => router.push("/dashboard")} className="hover:text-blue-700 cursor-pointer">
-                Dashboard
-              </li>
-            )}
-
-            {!isLoggedIn && (
-              <li>
-                <a href="#testimonials">Happy Customers</a>
-              </li>
-            )}
-
-            <div className="flex flex-col gap-2 mt-4">
-              <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4" />
-                <a href="tel:919685530890" className="underline">
-                  9685530890
+          <div className="py-4 px-4">
+            {/* Navigation Links */}
+            <div className="space-y-1 mb-6">
+              <Link 
+                href="/" 
+                className="block px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors font-medium"
+                onClick={() => setOpen(false)}
+              >
+                Home
+              </Link>
+              <Link 
+                href="/services" 
+                className="block px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors font-medium"
+                onClick={() => setOpen(false)}
+              >
+                Services
+              </Link>
+              {!isLoggedIn ? (
+                <button 
+                  onClick={() => { onDashboardClick(); setOpen(false); }} 
+                  className="w-full text-left px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors font-medium"
+                >
+                  Login
+                </button>
+              ) : (
+                <button 
+                  onClick={() => { router.push("/dashboard"); setOpen(false); }} 
+                  className="w-full text-left px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors font-medium"
+                >
+                  Dashboard
+                </button>
+              )}
+              {!isLoggedIn && (
+                <a 
+                  href="#testimonials" 
+                  className="block px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors font-medium"
+                  onClick={() => setOpen(false)}
+                >
+                  Happy Customers
                 </a>
-              </div>
+              )}
+            </div>
+
+            {/* Contact & Actions */}
+            <div className="space-y-3 pt-4 border-t border-gray-100">
+              <a 
+                href="tel:919685530890" 
+                className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-50 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+              >
+                <Phone className="w-5 h-5 text-blue-600" />
+                <span className="font-medium text-gray-700">Call: 9685530890</span>
+              </a>
 
               <button 
                 onClick={() => {
@@ -322,30 +324,33 @@ export default function Navbar({
                   }
                   setOpen(false);
                 }}
-                className="bg-[#0C1B33] text-white px-5 py-2 rounded-lg inline-block text-center hover:bg-[#16294d] transition-colors"
+                className="w-full bg-gradient-to-r from-[#0C1B33] to-[#1e3a5f] text-white px-6 py-4 rounded-xl font-semibold hover:shadow-lg active:scale-95 transition-all duration-200"
               >
-                Book Now
+                Book Service Now
               </button>
 
               {isLoggedIn && (
-                <>
-                  <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 px-4 py-3 bg-blue-50 rounded-xl">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
                       {userName.charAt(0)}
                     </div>
-                    <span className="text-sm font-medium text-gray-700">{userName}</span>
+                    <div>
+                      <p className="font-medium text-gray-900">{userName}</p>
+                      <p className="text-sm text-gray-600">Logged in</p>
+                    </div>
                   </div>
                   <button
-                    onClick={handleLogout}
-                    className="bg-red-50 hover:bg-red-100 text-red-600 px-5 py-2 rounded-lg flex items-center justify-center gap-2"
+                    onClick={() => { handleLogout(); setOpen(false); }}
+                    className="w-full bg-red-50 hover:bg-red-100 active:bg-red-200 text-red-600 px-4 py-3 rounded-xl flex items-center justify-center gap-2 font-medium transition-colors"
                   >
-                    <LogOut className="w-4 h-4" />
+                    <LogOut className="w-5 h-5" />
                     Logout
                   </button>
-                </>
+                </div>
               )}
             </div>
-          </ul>
+          </div>
         </div>
       )}
     </nav>

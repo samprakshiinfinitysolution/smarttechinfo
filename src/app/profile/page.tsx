@@ -188,27 +188,66 @@ export default function ProfilePage() {
     setEmailChanged(false);
   };
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 py-4 md:py-8 pb-20 md:pb-8">
+        <div className="max-w-5xl mx-auto px-4 md:px-6">
+          <div className="bg-gradient-to-r from-[#0C1B33] to-[#1e3a5f] rounded-xl md:rounded-2xl p-4 md:p-8 mb-4 md:mb-6 animate-pulse">
+            <div className="flex items-center gap-3 md:gap-6">
+              <div className="w-16 h-16 md:w-24 md:h-24 bg-white/20 rounded-xl md:rounded-2xl"></div>
+              <div className="flex-1">
+                <div className="w-32 h-6 md:h-8 bg-white/20 rounded mb-2"></div>
+                <div className="w-48 h-4 md:h-5 bg-white/10 rounded"></div>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="lg:col-span-2 bg-white rounded-xl md:rounded-2xl border border-slate-200 shadow-sm p-4 md:p-6 animate-pulse">
+              <div className="w-48 h-6 bg-gray-200 rounded mb-6"></div>
+              <div className="space-y-4">
+                <div className="w-full h-12 bg-gray-100 rounded-xl"></div>
+                <div className="w-full h-12 bg-gray-100 rounded-xl"></div>
+                <div className="w-full h-12 bg-gray-100 rounded-xl"></div>
+                <div className="w-full h-24 bg-gray-100 rounded-xl"></div>
+              </div>
+            </div>
+            <div className="space-y-4 md:space-y-6">
+              <div className="bg-white rounded-xl md:rounded-2xl border border-slate-200 p-4 md:p-6 animate-pulse">
+                <div className="w-32 h-5 bg-gray-200 rounded mb-4"></div>
+                <div className="space-y-3">
+                  <div className="w-full h-4 bg-gray-100 rounded"></div>
+                  <div className="w-full h-4 bg-gray-100 rounded"></div>
+                  <div className="w-full h-4 bg-gray-100 rounded"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 py-8">
-      <div className="max-w-5xl mx-auto px-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 py-4 md:py-8 pb-20 md:pb-8">
+      <div className="max-w-5xl mx-auto px-4 md:px-6">
         <button
           onClick={() => router.push("/dashboard")}
-          className="flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-6 transition-colors"
+          className="hidden md:flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-4 md:mb-6 transition-colors"
         >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="font-medium">Back to Dashboard</span>
+          <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
+          <span className="font-medium text-sm md:text-base">Back to Dashboard</span>
         </button>
 
-        <div className="bg-gradient-to-r from-[#0C1B33] to-[#1e3a5f] rounded-2xl p-8 mb-6 text-white">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-4xl font-bold border-4 border-white/30">
+        <div className="bg-gradient-to-r from-[#0C1B33] to-[#1e3a5f] rounded-xl md:rounded-2xl p-4 md:p-8 mb-4 md:mb-6 text-white">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex items-center gap-3 md:gap-6">
+              <div className="w-16 h-16 md:w-24 md:h-24 bg-white/20 backdrop-blur-sm rounded-xl md:rounded-2xl flex items-center justify-center text-2xl md:text-4xl font-bold border-2 md:border-4 border-white/30">
                 {user?.name?.charAt(0) || "U"}
               </div>
               <div>
-                <h1 className="text-3xl font-bold mb-2">{user?.name || "User"}</h1>
-                <p className="text-blue-200">{user?.email || "user@example.com"}</p>
-                <span className="inline-block px-3 py-1 bg-emerald-500/20 text-emerald-200 rounded-full text-xs font-semibold border border-emerald-400/30 mt-2">
+                <h1 className="text-xl md:text-3xl font-bold mb-1 md:mb-2">{user?.name || "User"}</h1>
+                <p className="text-blue-200 text-sm md:text-base">{user?.email || "user@example.com"}</p>
+                <span className="inline-block px-2 md:px-3 py-1 bg-emerald-500/20 text-emerald-200 rounded-full text-xs font-semibold border border-emerald-400/30 mt-1 md:mt-2">
                   Active Member
                 </span>
               </div>
@@ -216,7 +255,7 @@ export default function ProfilePage() {
             {!isEditing && (
               <button
                 onClick={() => setIsEditing(true)}
-                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-6 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all border border-white/30"
+                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl font-semibold flex items-center justify-center gap-2 transition-all border border-white/30 text-sm md:text-base"
               >
                 <Edit2 className="w-4 h-4" />
                 Edit Profile
@@ -225,15 +264,15 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-lg p-6">
-              <h2 className="text-xl font-bold text-slate-900 mb-6">Personal Information</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="lg:col-span-2 space-y-4 md:space-y-6">
+            <div className="bg-white rounded-xl md:rounded-2xl border border-slate-200 shadow-sm md:shadow-lg p-4 md:p-6">
+              <h2 className="text-lg md:text-xl font-bold text-slate-900 mb-4 md:mb-6">Personal Information</h2>
 
-              <div className="space-y-5">
+              <div className="space-y-4 md:space-y-5">
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
-                    <User className="w-4 h-4" />
+                  <label className="flex items-center gap-2 text-xs md:text-sm font-medium text-slate-700 mb-2">
+                    <User className="w-3 h-3 md:w-4 md:h-4" />
                     Full Name
                   </label>
                   {isEditing ? (
@@ -241,18 +280,18 @@ export default function ProfilePage() {
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full border-2 border-slate-400 rounded-xl px-4 py-3 bg-white text-slate-900 focus:border-blue-500 focus:outline-none transition-colors"
+                      className="w-full border-2 border-slate-400 rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3 bg-white text-slate-900 focus:border-blue-500 focus:outline-none transition-colors text-sm md:text-base"
                     />
                   ) : (
-                    <p className="text-slate-900 font-medium bg-slate-50 px-4 py-3 rounded-xl">
+                    <p className="text-slate-900 font-medium bg-slate-50 px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl text-sm md:text-base">
                       {user?.name || "Not provided"}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
-                    <Mail className="w-4 h-4" />
+                  <label className="flex items-center gap-2 text-xs md:text-sm font-medium text-slate-700 mb-2">
+                    <Mail className="w-3 h-3 md:w-4 md:h-4" />
                     Email Address
                   </label>
                   {isEditing ? (
@@ -261,7 +300,7 @@ export default function ProfilePage() {
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full border-2 border-slate-400 rounded-xl px-4 py-3 bg-white text-slate-900 focus:border-blue-500 focus:outline-none transition-colors"
+                        className="w-full border-2 border-slate-400 rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3 bg-white text-slate-900 focus:border-blue-500 focus:outline-none transition-colors text-sm md:text-base"
                       />
                       {formData.email !== user?.email && (
                         <p className="text-xs text-amber-600 flex items-center gap-1">
@@ -271,15 +310,15 @@ export default function ProfilePage() {
                       )}
                     </div>
                   ) : (
-                    <p className="text-slate-900 font-medium bg-slate-50 px-4 py-3 rounded-xl">
+                    <p className="text-slate-900 font-medium bg-slate-50 px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl text-sm md:text-base">
                       {user?.email || "Not provided"}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
-                    <Phone className="w-4 h-4" />
+                  <label className="flex items-center gap-2 text-xs md:text-sm font-medium text-slate-700 mb-2">
+                    <Phone className="w-3 h-3 md:w-4 md:h-4" />
                     Phone Number
                   </label>
                   {isEditing ? (
@@ -288,10 +327,10 @@ export default function ProfilePage() {
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       placeholder="+91 98765 43210"
-                      className="w-full border-2 border-slate-400 rounded-xl px-4 py-3 bg-white text-slate-900 focus:border-blue-500 focus:outline-none transition-colors"
+                      className="w-full border-2 border-slate-400 rounded-lg md:rounded-xl px-3 md:px-4 py-2 md:py-3 bg-white text-slate-900 focus:border-blue-500 focus:outline-none transition-colors text-sm md:text-base"
                     />
                   ) : (
-                    <p className="text-slate-900 font-medium bg-slate-50 px-4 py-3 rounded-xl">
+                    <p className="text-slate-900 font-medium bg-slate-50 px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl text-sm md:text-base">
                       {formData.phone || "Not provided"}
                     </p>
                   )}
@@ -306,11 +345,11 @@ export default function ProfilePage() {
                     />
                   ) : (
                     <>
-                      <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
-                        <MapPin className="w-4 h-4" />
+                      <label className="flex items-center gap-2 text-xs md:text-sm font-medium text-slate-700 mb-2">
+                        <MapPin className="w-3 h-3 md:w-4 md:h-4" />
                         Address
                       </label>
-                      <p className="text-slate-900 font-medium bg-slate-50 px-4 py-3 rounded-xl">
+                      <p className="text-slate-900 font-medium bg-slate-50 px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl text-sm md:text-base">
                         {formData.address || "Not provided"}
                       </p>
                     </>
@@ -319,19 +358,19 @@ export default function ProfilePage() {
               </div>
 
               {isEditing && !showOtpVerification && (
-                <div className="flex gap-3 mt-6">
+                <div className="flex gap-2 md:gap-3 mt-4 md:mt-6">
                   <button
                     onClick={handleSave}
-                    className="flex-1 bg-gradient-to-r from-[#0C1B33] to-[#1e3a5f] text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:shadow-lg transition-all"
+                    className="flex-1 bg-gradient-to-r from-[#0C1B33] to-[#1e3a5f] text-white py-2 md:py-3 rounded-lg md:rounded-xl font-semibold flex items-center justify-center gap-2 hover:shadow-lg transition-all text-sm md:text-base"
                   >
-                    <Save className="w-5 h-5" />
+                    <Save className="w-4 h-4 md:w-5 md:h-5" />
                     Save Changes
                   </button>
                   <button
                     onClick={handleCancel}
-                    className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all"
+                    className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 md:py-3 rounded-lg md:rounded-xl font-semibold flex items-center justify-center gap-2 transition-all text-sm md:text-base"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-4 h-4 md:w-5 md:h-5" />
                     Cancel
                   </button>
                 </div>
@@ -403,43 +442,43 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <div className="space-y-6">
-            <div className="bg-gradient-to-br from-[#0C1B33] to-[#1e3a5f] rounded-2xl p-6 shadow-lg text-white">
-              <h3 className="font-bold text-lg mb-4">Account Stats</h3>
-              <div className="space-y-4">
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-gradient-to-br from-[#0C1B33] to-[#1e3a5f] rounded-xl md:rounded-2xl p-4 md:p-6 shadow-sm md:shadow-lg text-white">
+              <h3 className="font-bold text-base md:text-lg mb-3 md:mb-4">Account Stats</h3>
+              <div className="space-y-3 md:space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-blue-200 text-sm">Member Since</span>
-                  <span className="font-semibold">{new Date(user?.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                  <span className="text-blue-200 text-xs md:text-sm">Member Since</span>
+                  <span className="font-semibold text-sm md:text-base">{new Date(user?.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-blue-200 text-sm">Total Bookings</span>
-                  <span className="font-semibold">{bookingsCount}</span>
+                  <span className="text-blue-200 text-xs md:text-sm">Total Bookings</span>
+                  <span className="font-semibold text-sm md:text-base">{bookingsCount}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-blue-200 text-sm">Account Status</span>
-                  <span className="font-semibold text-emerald-300">Active</span>
+                  <span className="text-blue-200 text-xs md:text-sm">Account Status</span>
+                  <span className="font-semibold text-emerald-300 text-sm md:text-base">Active</span>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-lg p-6">
-              <h3 className="font-bold text-slate-900 mb-4">Quick Links</h3>
-              <div className="space-y-2">
+            <div className="bg-white rounded-xl md:rounded-2xl border border-slate-200 shadow-sm md:shadow-lg p-4 md:p-6">
+              <h3 className="font-bold text-slate-900 mb-3 md:mb-4 text-base md:text-lg">Quick Links</h3>
+              <div className="space-y-1 md:space-y-2">
                 <button
                   onClick={() => router.push("/dashboard")}
-                  className="w-full text-left px-4 py-3 hover:bg-slate-50 rounded-xl transition-all text-slate-700 font-medium"
+                  className="w-full text-left px-3 md:px-4 py-2 md:py-3 hover:bg-slate-50 rounded-lg md:rounded-xl transition-all text-slate-700 font-medium text-sm md:text-base"
                 >
                   📊 Dashboard
                 </button>
                 <button
                   onClick={() => router.push("/book")}
-                  className="w-full text-left px-4 py-3 hover:bg-slate-50 rounded-xl transition-all text-slate-700 font-medium"
+                  className="w-full text-left px-3 md:px-4 py-2 md:py-3 hover:bg-slate-50 rounded-lg md:rounded-xl transition-all text-slate-700 font-medium text-sm md:text-base"
                 >
                   📅 Book Service
                 </button>
                 <button
                   onClick={() => router.push("/services")}
-                  className="w-full text-left px-4 py-3 hover:bg-slate-50 rounded-xl transition-all text-slate-700 font-medium"
+                  className="w-full text-left px-3 md:px-4 py-2 md:py-3 hover:bg-slate-50 rounded-lg md:rounded-xl transition-all text-slate-700 font-medium text-sm md:text-base"
                 >
                   🔧 Services
                 </button>

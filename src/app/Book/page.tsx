@@ -156,25 +156,52 @@ function BookingForm() {
     }
   };
 
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 py-12 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12 animate-pulse">
+            <div className="w-64 h-12 bg-gray-200 rounded mx-auto mb-3"></div>
+            <div className="w-96 h-6 bg-gray-100 rounded mx-auto"></div>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 bg-white rounded-2xl shadow-xl border border-slate-200 p-8 animate-pulse">
+              <div className="space-y-6">
+                <div className="w-48 h-8 bg-gray-200 rounded"></div>
+                <div className="w-full h-12 bg-gray-100 rounded-xl"></div>
+                <div className="w-full h-12 bg-gray-100 rounded-xl"></div>
+                <div className="w-full h-12 bg-gray-100 rounded-xl"></div>
+                <div className="w-full h-32 bg-gray-100 rounded-xl"></div>
+              </div>
+            </div>
+            <div className="lg:col-span-1 bg-white rounded-2xl shadow-xl border border-slate-200 p-6 animate-pulse">
+              <div className="w-32 h-6 bg-gray-200 rounded mb-6"></div>
+              <div className="w-full h-12 bg-gray-100 rounded-xl mb-4"></div>
+              <div className="w-full h-24 bg-gray-100 rounded-xl"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const serviceCharge = service ? serviceCharges[service] : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 py-6 sm:py-12 px-4 pb-24 md:pb-12">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-3">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-3">
             Book Your Service
           </h1>
-          <p className="text-slate-600 text-lg">
+          <p className="text-slate-600 text-base sm:text-lg px-4">
             Quick, easy, and hassle-free booking in 2 simple steps
           </p>
         </div>
 
         {/* Progress Steps */}
-        <div className="flex items-center justify-center gap-4 mb-12">
+        <div className="flex items-center justify-center gap-2 sm:gap-4 mb-8 sm:mb-12 px-4">
           {[
             { no: 1, label: "Details" },
             { no: 2, label: "Schedule" },
@@ -182,7 +209,7 @@ function BookingForm() {
             <div key={item.no} className="flex items-center gap-3">
               <div className="flex flex-col items-center">
                 <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all ${
+                  className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold text-base sm:text-lg transition-all ${
                     step >= item.no
                       ? "bg-gradient-to-br from-[#0C1B33] to-[#1e3a5f] text-white shadow-lg scale-110"
                       : "bg-white text-slate-400 border-2 border-slate-200"
@@ -191,7 +218,7 @@ function BookingForm() {
                   {step > item.no ? <CheckCircle2 className="w-6 h-6" /> : item.no}
                 </div>
                 <span
-                  className={`text-xs mt-2 font-medium ${
+                  className={`text-xs sm:text-sm mt-2 font-medium ${
                     step >= item.no ? "text-slate-900" : "text-slate-400"
                   }`}
                 >
@@ -200,7 +227,7 @@ function BookingForm() {
               </div>
               {idx < 1 && (
                 <div
-                  className={`h-1 w-16 md:w-24 rounded-full transition-all ${
+                  className={`h-1 w-12 sm:w-16 md:w-24 rounded-full transition-all ${
                     step > item.no ? "bg-[#0C1B33]" : "bg-slate-200"
                   }`}
                 ></div>
@@ -209,10 +236,10 @@ function BookingForm() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Main Form */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
+            <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 sm:p-6 lg:p-8">
               {/* STEP 1 */}
               {step === 1 && (
                 <div className="space-y-6">
@@ -298,7 +325,7 @@ function BookingForm() {
                   />
                   {addressError && <p className="text-red-600 text-sm mt-1">{addressError}</p>}
 
-                  <div className="flex justify-end pt-4">
+                  <div className="flex justify-end pt-6">
                     <button
                       onClick={() => {
                         // validate required fields on step 1 before continuing
@@ -337,7 +364,7 @@ function BookingForm() {
 
                         if (ok) setStep(2);
                       }}
-                      className="bg-gradient-to-r from-[#0C1B33] to-[#1e3a5f] text-white px-8 py-3 rounded-xl font-semibold flex items-center gap-2 hover:shadow-lg transition-all"
+                      className="w-full sm:w-auto bg-gradient-to-r from-[#0C1B33] to-[#1e3a5f] text-white px-8 py-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:shadow-lg active:scale-95 transition-all"
                     >
                       Continue
                       <ArrowRight className="w-5 h-5" />
@@ -378,7 +405,7 @@ function BookingForm() {
                       <Clock className="w-4 h-4" />
                       Select Time Slot *
                     </label>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {[
                         "9:00 AM – 11:00 AM",
                         "11:00 AM – 1:00 PM",
@@ -389,10 +416,10 @@ function BookingForm() {
                         <button
                           key={slot}
                           onClick={() => setTimeSlot(slot)}
-                          className={`border-2 rounded-xl px-4 py-3 font-medium transition-all ${
+                          className={`border-2 rounded-xl px-4 py-4 font-medium transition-all text-sm sm:text-base active:scale-95 ${
                             timeSlot === slot
-                              ? "border-[#0C1B33] bg-[#0C1B33] text-white shadow-md"
-                              : "border-slate-300 hover:border-slate-400 text-slate-900 bg-white"
+                              ? "border-[#0C1B33] bg-[#0C1B33] text-white shadow-md scale-105"
+                              : "border-slate-300 hover:border-slate-400 text-slate-900 bg-white hover:shadow-sm"
                           }`}
                         >
                           {slot}
@@ -415,17 +442,17 @@ function BookingForm() {
                     />
                   </div>
 
-                  <div className="flex justify-between pt-4">
+                  <div className="flex flex-col sm:flex-row justify-between gap-3 pt-6">
                     <button
                       onClick={() => setStep(1)}
-                      className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 transition-all"
+                      className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 active:bg-slate-200 transition-all order-2 sm:order-1"
                     >
                       <ArrowLeft className="w-5 h-5" />
                       Back
                     </button>
                     <button
                       onClick={handleBookingSubmit}
-                      className="bg-gradient-to-r from-emerald-500 to-green-600 text-white px-8 py-3 rounded-xl font-semibold flex items-center gap-2 hover:shadow-lg transition-all"
+                      className="bg-gradient-to-r from-emerald-500 to-green-600 text-white px-8 py-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:shadow-lg active:scale-95 transition-all order-1 sm:order-2"
                     >
                       <CheckCircle2 className="w-5 h-5" />
                       Confirm Booking
@@ -439,8 +466,8 @@ function BookingForm() {
           </div>
 
           {/* Booking Summary Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-6 sticky top-6">
+          <div className="lg:col-span-1 order-first lg:order-last">
+            <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 sm:p-6 lg:sticky lg:top-6">
               <h3 className="text-xl font-bold text-slate-900 mb-6">Booking Summary</h3>
 
               <div className="space-y-4 mb-6">

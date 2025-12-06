@@ -64,7 +64,8 @@ class SessionManager {
     if (role === 'admin') {
       localStorage.removeItem('adminToken');
       localStorage.removeItem('adminToken_time');
-      window.location.href = `/admin-login?expired=true&message=${encodeURIComponent(message)}`;
+      // redirect to new admin login route under /admin/login
+      window.location.href = `/admin/login?expired=true&message=${encodeURIComponent(message)}`;
     } else {
       localStorage.removeItem('token');
       localStorage.removeItem('user');

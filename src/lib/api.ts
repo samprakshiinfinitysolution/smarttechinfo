@@ -109,8 +109,13 @@ export const api = {
     return res.json();
   },
 
-  getAllBookings: async (token: string) => {
-    const res = await fetch(`${API_URL}/admin/bookings`, {
+  getAllBookings: async (token: string, params?: { page?: number; limit?: number }) => {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    const queryString = queryParams.toString();
+    const url = queryString ? `${API_URL}/admin/bookings?${queryString}` : `${API_URL}/admin/bookings`;
+    const res = await fetch(url, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return res.json();

@@ -15,12 +15,10 @@ router.put('/bookings/accept/:id', authMiddleware, techCtrl.acceptBooking);
 // Cancel a booking (by assigned technician)
 router.put('/bookings/cancel/:id', authMiddleware, techCtrl.cancelBooking);
 
-// Update booking status (assigned, on_the_way, in_progress, completed, cancelled)
-router.put('/bookings/status/:id', authMiddleware, techCtrl.updateBookingStatus);
-
-// OTP flows: generate start OTP (admin normally), verify start OTP -> moves to In Progress and sends completion OTP
+// OTP flows: generate start OTP, verify start OTP, generate completion OTP, verify completion OTP
 router.post('/bookings/generate-start-otp/:id', authMiddleware, techCtrl.generateStartOtp);
 router.post('/bookings/verify-start-otp/:id', authMiddleware, techCtrl.verifyStartOtp);
+router.post('/bookings/generate-complete-otp/:id', authMiddleware, techCtrl.generateCompleteOtp);
 router.post('/bookings/verify-complete-otp/:id', authMiddleware, techCtrl.verifyCompleteOtp);
 
 module.exports = router;

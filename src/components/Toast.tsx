@@ -52,11 +52,15 @@ export default function Toast({ message, type, onClose, duration = 3000 }: Toast
   };
 
   return (
-    <div className="fixed top-4 right-4 z-[9999] animate-slide-in">
-      <div className={`${styles[type]} border-2 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 min-w-[300px] max-w-md`}>
+    <div className="fixed top-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-auto z-[9999] animate-slide-in">
+      <div className={`${styles[type]} border-2 text-white px-4 sm:px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 w-full sm:min-w-[300px] sm:max-w-md backdrop-blur-sm`}>
         <div className="flex-shrink-0">{icons[type]}</div>
-        <p className="flex-1 font-medium">{message}</p>
-        <button onClick={onClose} className="flex-shrink-0 hover:bg-white/20 rounded-full p-1 transition-colors">
+        <p className="flex-1 font-medium text-sm sm:text-base leading-tight">{message}</p>
+        <button 
+          onClick={onClose} 
+          className="flex-shrink-0 hover:bg-white/20 active:bg-white/30 rounded-full p-2 transition-colors touch-manipulation"
+          aria-label="Close notification"
+        >
           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />

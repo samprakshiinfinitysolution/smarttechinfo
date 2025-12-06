@@ -11,7 +11,7 @@ export default function AdminRouteGuard({ children }: { children: React.ReactNod
 
   useEffect(() => {
     // Skip guard for login page
-    if (pathname === '/admin-login' || pathname === '/admin/login') {
+    if (pathname === '/admin/login') {
       setIsAuthorized(true);
       setIsLoading(false);
       return;
@@ -22,7 +22,7 @@ export default function AdminRouteGuard({ children }: { children: React.ReactNod
     
     if (!adminToken || !sessionManager.isTokenValid('admin')) {
       // Redirect to login if no valid token
-      router.push('/admin-login?unauthorized=true');
+      router.push('/admin/login?unauthorized=true');
       return;
     }
 

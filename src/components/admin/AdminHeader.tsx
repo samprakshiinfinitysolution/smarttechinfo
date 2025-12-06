@@ -49,26 +49,61 @@ export default function AdminHeader() {
   }, []);
 
   useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const token = localStorage.getItem('adminToken');
-        if (token) {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/admin/notifications`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          if (res.ok) {
-            const data = await res.json();
-            setNotifications(data.notifications || []);
+      let socket: any = null;
+
+      const fetchNotifications = async () => {
+        try {
+          const token = localStorage.getItem('adminToken');
+          if (token) {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/admin/notifications`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.ok) {
+              const data = await res.json();
+              setNotifications(data.notifications || []);
+            }
           }
+        } catch (err) {
+          console.error('Failed to fetch notifications', err);
+        }
+      };
+
+      fetchNotifications();
+
+      // Setup Socket.IO client for real-time notifications
+      try {
+        const { io } = require('socket.io-client');
+        const adminStr = localStorage.getItem('adminUser');
+        const adminObj = adminStr ? JSON.parse(adminStr) : null;
+        const adminId = adminObj?._id || adminObj?.id || null;
+        if (adminId) {
+          const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || (process.env.NEXT_PUBLIC_API_URL || '') || window.location.origin;
+          socket = io(socketUrl, { transports: ['websocket', 'polling'] });
+          socket.on('connect', () => {
+            socket.emit('join', adminId);
+          });
+          socket.on('notification', (notif: any) => {
+            // Prepend new notification and keep unique by id
+            setNotifications(prev => {
+              const exists = prev.some(n => String(n._id) === String(notif._id));
+              if (exists) return prev;
+              return [notif, ...prev];
+            });
+          });
         }
       } catch (err) {
-        console.error('Failed to fetch notifications', err);
+        console.error('Socket.IO client setup failed', err);
       }
-    };
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 60000);
-    return () => clearInterval(interval);
-  }, []);
+
+      const interval = setInterval(fetchNotifications, 60000);
+      return () => {
+        clearInterval(interval);
+        if (socket) {
+          socket.disconnect();
+          socket = null;
+        }
+      };
+    }, []);
 
   const getPageTitle = () => {
     if (pathname?.includes("/dashboard")) return "Dashboard";

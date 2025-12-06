@@ -1,4 +1,6 @@
 const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
@@ -6,6 +8,16 @@ const connectDB = require('./config/db');
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIo(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    methods: ['GET', 'POST']
+  }
+});
+
+// Make io available globally
+app.set('io', io);
 
 // Connect to MongoDB
 connectDB();
@@ -45,6 +57,7 @@ app.use('/bookings', require('./routes/bookingRoutes'));
 app.use('/technicians', require('./routes/technicianRoutes'));
 app.use('/users', require('./routes/userRoutes'));
 app.use('/services', require('./routes/serviceRoutes'));
+app.use('/notifications', require('./routes/notificationRoutes'));
 
 // Health check
 app.get('/health', (req, res) => {
@@ -61,9 +74,23 @@ app.get('/', (req, res) => {
   res.send('✅ SmartTechInfo Run successfully');
 });
 
+// Socket.IO connection handling
+io.on('connection', (socket) => {
+  console.log('User connected:', socket.id);
+  
+  socket.on('join', (userId) => {
+    socket.join(`user_${userId}`);
+    console.log(`User ${userId} joined room`);
+  });
+  
+  socket.on('disconnect', () => {
+    console.log('User disconnected:', socket.id);
+  });
+});
+
 // Default backend port for local development is now 5003
 const PORT = process.env.PORT || 5004;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 

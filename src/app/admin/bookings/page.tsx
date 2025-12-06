@@ -9,18 +9,22 @@ import EmptyState from "@/components/EmptyState";
 export default function BookingsPage() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
 
   useEffect(() => {
     const fetchBookings = async () => {
       try {
         const token = localStorage.getItem("adminToken");
         if (token) {
-          const data = await api.getAllBookings(token);
+          const data = await api.getAllBookings(token, { page: 1, limit: 10 });
           if (data.bookings) {
             setBookings(Array.isArray(data.bookings) ? data.bookings : []);
           } else {
             setBookings(Array.isArray(data) ? data : []);
           }
+          setHasMore(data.pagination?.hasMore || false);
         }
       } catch (error) {
         console.error("Error fetching bookings:", error);
@@ -31,6 +35,26 @@ export default function BookingsPage() {
     };
     fetchBookings();
   }, []);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const token = localStorage.getItem("adminToken");
+      if (token) {
+        const nextPage = page + 1;
+        const data = await api.getAllBookings(token, { page: nextPage, limit: 10 });
+        if (data.bookings) {
+          setBookings(prev => [...prev, ...(Array.isArray(data.bookings) ? data.bookings : [])]);
+        }
+        setHasMore(data.pagination?.hasMore || false);
+        setPage(nextPage);
+      }
+    } catch (error) {
+      console.error("Error loading more bookings:", error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -104,6 +128,7 @@ export default function BookingsPage() {
     switch (status) {
       case "Completed": return "bg-emerald-100 text-emerald-800";
       case "In Progress": return "bg-amber-100 text-amber-800";
+      case "Accepted": return "bg-purple-100 text-purple-800";
       case "Scheduled": return "bg-sky-100 text-sky-800";
       case "Pending": return "bg-yellow-100 text-yellow-800";
       case "Cancelled": return "bg-red-100 text-red-800";
@@ -162,6 +187,7 @@ export default function BookingsPage() {
             <option>All Status</option>
             <option>Completed</option>
             <option>In Progress</option>
+            <option>Accepted</option>
             <option>Scheduled</option>
             <option>Pending</option>
             <option>Cancelled</option>
@@ -636,6 +662,7 @@ export default function BookingsPage() {
                 </label>
                 <select name="status" defaultValue={showEditModal.status} required className="w-full px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 font-medium">
                   <option value="Pending">Pending</option>
+                  <option value="Accepted">Accepted</option>
                   <option value="Scheduled">Scheduled</option>
                   <option value="In Progress">In Progress</option>
                   <option value="Completed">Completed</option>

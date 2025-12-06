@@ -99,7 +99,7 @@ function getTimeAgo(date) {
 
 exports.getAllBookings = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = '', status = '' } = req.query;
+    const { page = 1, limit = 20, search = '', status = '' } = req.query;
     const skip = (parseInt(page) - 1) * parseInt(limit);
     
     let query = {};
@@ -107,22 +107,20 @@ exports.getAllBookings = async (req, res) => {
       query.status = status;
     }
     
-    let bookings = await Booking.find(query)
+    // Add search to query for better performance
+    if (search) {
+      query.$or = [
+        { service: { $regex: search, $options: 'i' } },
+        { _id: search.length === 24 ? search : null }
+      ].filter(q => q._id !== null);
+    }
+    
+    const bookings = await Booking.find(query)
       .populate('customer', 'name email phone')
       .populate('technician', 'name specialties')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));
-    
-    if (search) {
-      const searchLower = search.toLowerCase();
-      bookings = bookings.filter(b => 
-        b._id.toString().toLowerCase().includes(searchLower) ||
-        b.customer?.name?.toLowerCase().includes(searchLower) ||
-        b.service?.toLowerCase().includes(searchLower) ||
-        b.technician?.name?.toLowerCase().includes(searchLower)
-      );
-    }
     
     const total = await Booking.countDocuments(query);
     
@@ -132,7 +130,8 @@ exports.getAllBookings = async (req, res) => {
         total,
         page: parseInt(page),
         limit: parseInt(limit),
-        pages: Math.ceil(total / parseInt(limit))
+        pages: Math.ceil(total / parseInt(limit)),
+        hasMore: skip + bookings.length < total
       }
     });
   } catch (error) {
@@ -402,7 +401,8 @@ exports.updateBooking = async (req, res) => {
 // Status transition validation
 function isValidStatusTransition(currentStatus, newStatus) {
   const validTransitions = {
-    'Pending': ['Scheduled', 'Cancelled'],
+    'Pending': ['Accepted', 'Scheduled', 'Cancelled'],
+    'Accepted': ['Scheduled', 'In Progress', 'Cancelled'],
     'Scheduled': ['In Progress', 'Cancelled'],
     'In Progress': ['Completed', 'Cancelled'],
     'Completed': [],

@@ -28,16 +28,29 @@ export default function Services() {
 
   if (loading) {
     return (
-      <section className="w-full text-black py-16 bg-white">
-        <div className="text-center">
-          <p className="text-lg">Loading services...</p>
+      <section className="w-full text-black pt-8 pb-16 bg-white">
+        <div className="text-center mb-10">
+          <div className="w-48 h-10 bg-gray-200 rounded mx-auto mb-3 animate-pulse"></div>
+          <div className="w-96 h-6 bg-gray-100 rounded mx-auto animate-pulse"></div>
+        </div>
+        <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 animate-pulse">
+              <div className="w-16 h-5 bg-gray-200 rounded-full mb-3"></div>
+              <div className="w-full h-36 bg-gray-200 rounded-lg mb-3"></div>
+              <div className="w-3/4 h-5 bg-gray-200 rounded mb-2"></div>
+              <div className="w-1/2 h-4 bg-gray-100 rounded mb-3"></div>
+              <div className="w-full h-16 bg-gray-100 rounded-lg mb-3"></div>
+              <div className="w-full h-10 bg-gray-200 rounded-lg"></div>
+            </div>
+          ))}
         </div>
       </section>
     );
   }
 
   return (
-    <section id="services" className="w-full text-black py-16 bg-white">
+    <section id="services" className="w-full text-black pt-8 pb-16 bg-white">
       {/* Heading */}
       <div className="text-center mb-10">
         <h2 className="text-4xl font-bold">Our Services</h2>
@@ -125,3 +138,5 @@ export default function Services() {
     </section>
   );
 }
+
+

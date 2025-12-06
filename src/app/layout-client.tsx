@@ -4,6 +4,8 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Login from "./login/page";
 import Signup from "./signup/page";
+import { NotificationProvider } from "../contexts/NotificationContext";
+import MobileBottomNav from "../components/MobileBottomNav";
 
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
@@ -18,6 +20,9 @@ export default function RootLayoutClient({ children }: { children: React.ReactNo
   // If we're on any admin route, render children only (no site navbar/footer or modals)
   const isAdminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
   if (isAdminRoute) return <>{children}</>;
+
+  // Show mobile nav on specific pages
+  const showMobileNav = pathname === '/dashboard' || pathname === '/profile' || pathname === '/book' || pathname === '/services' || pathname === '/user-login';
 
   const handleLoginSuccess = () => {
     setOpenLogin(false);
@@ -35,7 +40,7 @@ export default function RootLayoutClient({ children }: { children: React.ReactNo
   }, []);
 
   return (
-    <>
+    <NotificationProvider>
       <Navbar 
         key={refreshKey}
         onDashboardClick={() => setOpenLogin(true)} 
@@ -57,9 +62,14 @@ export default function RootLayoutClient({ children }: { children: React.ReactNo
         />
       )}
 
-      {children}
+      <div className={showMobileNav ? 'pb-20 md:pb-0' : ''}>
+        {children}
+      </div>
+
+      {/* Mobile Bottom Navigation */}
+      {showMobileNav && <MobileBottomNav />}
 
       <Footer />
-    </>
+    </NotificationProvider>
   );
 }
